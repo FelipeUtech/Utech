@@ -1,0 +1,71 @@
+================================================================================
+REPORTE DE ANÁLISIS DE PILOTE CON CARGA LATERAL
+================================================================================
+
+PROPIEDADES DEL PILOTE:
+--------------------------------------------------------------------------------
+  Longitud (L):                20.00 m
+  Diámetro (D):                1.00 m
+  Módulo de elasticidad (E):   25.00 GPa
+  Momento de inercia (I):      0.049087 m⁴
+  Rigidez flexural (EI):       1227.18 MN·m²
+
+ESTRATOS DE SUELO:
+--------------------------------------------------------------------------------
+  Estrato 1:
+    Profundidad:  0.00 - 5.00 m
+    Espesor:      5.00 m
+    k_h:          7.33 MN/m³
+  Estrato 2:
+    Profundidad:  5.00 - 10.00 m
+    Espesor:      5.00 m
+    k_h:          14.65 MN/m³
+  Estrato 3:
+    Profundidad:  10.00 - 20.00 m
+    Espesor:      10.00 m
+    k_h:          58.61 MN/m³
+
+CASO DE CARGA:
+--------------------------------------------------------------------------------
+  Carga horizontal (P):  1000.00 kN
+  Momento (M):           0.00 kN·m
+  Condición de cabeza:   Libre
+
+RESULTADOS PRINCIPALES:
+================================================================================
+
+  Deflexión en cabeza del pilote:
+    y(0) = 56.262 mm
+
+  Rotación en cabeza del pilote:
+    θ(0) = -10.799 mrad
+    θ(0) = -0.6187°
+
+  Deflexión máxima:
+    y_max = 56.262 mm
+    Profundidad: 0.00 m
+
+  Momento flector máximo:
+    M_max = -1794.88 kN·m
+    Profundidad: 4.60 m
+
+  Fuerza cortante:
+    V_max = 1000.00 kN (a 0.00 m)
+    V_min = -412.13 kN (a 8.80 m)
+
+  Presión del suelo máxima:
+    p_max = 412.17 kN/m
+    Profundidad: 0.00 m
+
+ESTADÍSTICAS ADICIONALES:
+--------------------------------------------------------------------------------
+  Punto(s) de inflexión del momento:
+    z = 0.20 m
+    z = 13.40 m
+
+  Profundidad de penetración efectiva (y > 1% y_max):
+    L_eff = 14.20 m
+
+================================================================================
+FIN DEL REPORTE
+================================================================================
