@@ -102,6 +102,30 @@ class SoilLayer:
         """Verificar si una profundidad está dentro de este estrato"""
         return self.depth_top <= depth < self.depth_bottom
 
+    @classmethod
+    def from_elastic_modulus(cls, depth_top: float, depth_bottom: float,
+                            elastic_modulus: float, pile_diameter: float,
+                            poisson_ratio: float = 0.3):
+        """
+        Crear un estrato de suelo a partir del módulo de Young (E)
+
+        Convierte el módulo elástico del suelo a coeficiente de reacción horizontal
+        usando la correlación: k_h = E_s / (1.5 * D * (1 - ν²))
+
+        Args:
+            depth_top: Profundidad superior del estrato (m)
+            depth_bottom: Profundidad inferior del estrato (m)
+            elastic_modulus: Módulo de Young del suelo (Pa)
+            pile_diameter: Diámetro del pilote (m)
+            poisson_ratio: Coeficiente de Poisson del suelo (adimensional, default=0.3)
+
+        Returns:
+            SoilLayer con k_h calculado desde E
+        """
+        # Correlación basada en teoría elástica
+        k_h = elastic_modulus / (1.5 * pile_diameter * (1 - poisson_ratio**2))
+        return cls(depth_top, depth_bottom, k_h)
+
 
 @dataclass
 class LoadCase:
