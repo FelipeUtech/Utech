@@ -133,23 +133,23 @@ class LateralLoadAnalysis:
         dx2 = dx ** 2
         dx3 = dx ** 3
 
-        # Nodo 0: Cortante = -V (fuerza horizontal aplicada)
-        # V = -EI * d³y/dx³
+        # Nodo 0: Cortante en la cabeza = Carga aplicada
+        # V = -EI * d³y/dx³ = P (carga horizontal aplicada)
         # d³y/dx³ ≈ (-yi+3 + 3*yi+2 - 3*yi+1 + yi) / dx³
         K[0, 0] = -self.pile.EI / dx3
         K[0, 1] = 3 * self.pile.EI / dx3
         K[0, 2] = -3 * self.pile.EI / dx3
         K[0, 3] = self.pile.EI / dx3
-        F[0] = -load.horizontal_load
+        F[0] = load.horizontal_load
 
         if load.free_head:
-            # Cabeza libre: Momento = M aplicado
-            # M = -EI * d²y/dx²
+            # Cabeza libre: Momento en la cabeza = Momento aplicado
+            # M = -EI * d²y/dx² = M_aplicado
             # d²y/dx² ≈ (yi+2 - 2*yi+1 + yi) / dx²
             K[1, 0] = self.pile.EI / dx2
             K[1, 1] = -2 * self.pile.EI / dx2
             K[1, 2] = self.pile.EI / dx2
-            F[1] = -load.moment
+            F[1] = load.moment
         else:
             # Cabeza fija: Rotación = 0
             # dy/dx ≈ (yi+1 - yi-1) / 2dx = 0
