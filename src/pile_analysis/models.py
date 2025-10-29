@@ -445,3 +445,431 @@ class AnalysisResults:
                 print("Matplotlib no está instalado. No se pueden generar gráficos.")
 
         return report_text
+
+    def generate_complete_report(self, pile: 'PileProperties', soil_layers: list,
+                                 load_case: 'LoadCase', save_path: str = 'reporte_completo.html'):
+        """
+        Generar reporte completo en HTML con todos los gráficos integrados
+
+        Incluye:
+        - Datos de entrada (pilote, suelo, carga)
+        - Resultados principales
+        - Gráficos de resultados (deflexión, rotación, momento, cortante, presión)
+        - Esquema del pilote con estratos y carga
+
+        Args:
+            pile: Propiedades del pilote
+            soil_layers: Lista de estratos de suelo
+            load_case: Caso de carga aplicado
+            save_path: Ruta para guardar el reporte HTML
+
+        Returns:
+            Ruta al archivo HTML generado
+        """
+        try:
+            import matplotlib.pyplot as plt
+            import matplotlib.patches as patches
+            from matplotlib.patches import FancyArrow, Rectangle
+            import base64
+            from io import BytesIO
+        except ImportError:
+            print("Matplotlib no está instalado. No se puede generar el reporte.")
+            return None
+
+        # Función auxiliar para convertir figura a base64
+        def fig_to_base64(fig):
+            buf = BytesIO()
+            fig.savefig(buf, format='png', dpi=150, bbox_inches='tight')
+            buf.seek(0)
+            img_base64 = base64.b64encode(buf.read()).decode('utf-8')
+            buf.close()
+            return img_base64
+
+        # 1. Crear esquema del pilote con estratos y carga
+        fig_scheme, ax_scheme = plt.subplots(1, 1, figsize=(8, 10))
+
+        # Dibujar pilote
+        pile_width = pile.diameter
+        pile_x = 2.0
+        ax_scheme.add_patch(Rectangle((pile_x - pile_width/2, 0), pile_width, pile.length,
+                                      facecolor='lightgray', edgecolor='black', linewidth=2))
+
+        # Dibujar estratos de suelo
+        colors = ['wheat', 'tan', 'sandybrown', 'sienna', 'brown']
+        for i, layer in enumerate(soil_layers):
+            color = colors[i % len(colors)]
+            # Lado izquierdo
+            ax_scheme.add_patch(Rectangle((0, layer.depth_top), pile_x - pile_width/2,
+                                         layer.thickness, facecolor=color,
+                                         edgecolor='black', linewidth=1, alpha=0.6))
+            # Lado derecho
+            ax_scheme.add_patch(Rectangle((pile_x + pile_width/2, layer.depth_top),
+                                         pile_x - pile_width/2, layer.thickness,
+                                         facecolor=color, edgecolor='black',
+                                         linewidth=1, alpha=0.6))
+
+            # Etiquetas de estratos
+            mid_depth = (layer.depth_top + layer.depth_bottom) / 2
+            ax_scheme.text(0.3, mid_depth, f'Estrato {i+1}\nE={layer.k_h*1.5*pile.diameter*0.91/1e6:.0f} MPa',
+                          fontsize=9, ha='left', va='center',
+                          bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+
+        # Dibujar carga horizontal
+        arrow_y = -0.5
+        if load_case.horizontal_load > 0:
+            ax_scheme.arrow(0.5, arrow_y, 1.0, 0, head_width=0.3, head_length=0.2,
+                           fc='red', ec='red', linewidth=3)
+            ax_scheme.text(0.3, arrow_y - 0.5, f'P = {load_case.horizontal_load/1e3:.0f} kN',
+                          fontsize=11, fontweight='bold', color='red')
+
+        # Dibujar momento si existe
+        if abs(load_case.moment) > 1:
+            from matplotlib.patches import Arc
+            arc = Arc((pile_x, arrow_y), 0.8, 0.8, angle=0, theta1=0, theta2=270,
+                     color='blue', linewidth=3)
+            ax_scheme.add_patch(arc)
+            ax_scheme.text(pile_x + 0.8, arrow_y, f'M = {load_case.moment/1e3:.0f} kN·m',
+                          fontsize=11, fontweight='bold', color='blue')
+
+        # Línea de superficie
+        ax_scheme.axhline(y=0, color='green', linewidth=2, linestyle='--', label='Superficie')
+
+        # Cotas
+        ax_scheme.text(pile_x + pile_width/2 + 0.5, pile.length/2,
+                      f'L = {pile.length:.1f} m', fontsize=10, rotation=-90,
+                      va='center', fontweight='bold')
+        ax_scheme.text(pile_x, -1.2, f'D = {pile.diameter:.2f} m',
+                      fontsize=10, ha='center', fontweight='bold')
+
+        ax_scheme.set_xlim(-0.5, 4.5)
+        ax_scheme.set_ylim(pile.length + 0.5, -2)
+        ax_scheme.set_aspect('equal')
+        ax_scheme.set_xlabel('', fontsize=12)
+        ax_scheme.set_ylabel('Profundidad (m)', fontsize=12)
+        ax_scheme.set_title('Esquema del Pilote y Estratos de Suelo', fontsize=14, fontweight='bold')
+        ax_scheme.grid(True, alpha=0.3)
+
+        scheme_base64 = fig_to_base64(fig_scheme)
+        plt.close(fig_scheme)
+
+        # 2. Crear gráficos de resultados (5 gráficos)
+        fig_results, axes = plt.subplots(2, 3, figsize=(18, 12))
+        axes = axes.flatten()
+
+        # Deflexión
+        axes[0].plot(self.deflections * 1000, self.depths, 'b-', linewidth=2.5)
+        axes[0].set_xlabel('Deflexión (mm)', fontsize=11, fontweight='bold')
+        axes[0].set_ylabel('Profundidad (m)', fontsize=11, fontweight='bold')
+        axes[0].grid(True, alpha=0.3)
+        axes[0].invert_yaxis()
+        axes[0].set_title('Deflexión Lateral', fontsize=13, fontweight='bold')
+        axes[0].axvline(0, color='k', linewidth=0.8, linestyle='--')
+
+        # Rotación
+        axes[1].plot(self.rotations * 1000, self.depths, 'g-', linewidth=2.5)
+        axes[1].set_xlabel('Rotación (mrad)', fontsize=11, fontweight='bold')
+        axes[1].set_ylabel('Profundidad (m)', fontsize=11, fontweight='bold')
+        axes[1].grid(True, alpha=0.3)
+        axes[1].invert_yaxis()
+        axes[1].set_title('Rotación', fontsize=13, fontweight='bold')
+        axes[1].axvline(0, color='k', linewidth=0.8, linestyle='--')
+
+        # Momento
+        axes[2].plot(self.moments / 1000, self.depths, 'r-', linewidth=2.5)
+        axes[2].set_xlabel('Momento (kN·m)', fontsize=11, fontweight='bold')
+        axes[2].set_ylabel('Profundidad (m)', fontsize=11, fontweight='bold')
+        axes[2].grid(True, alpha=0.3)
+        axes[2].invert_yaxis()
+        axes[2].set_title('Momento Flector', fontsize=13, fontweight='bold')
+        axes[2].axvline(0, color='k', linewidth=0.8, linestyle='--')
+
+        # Cortante
+        axes[3].plot(self.shears / 1000, self.depths, 'm-', linewidth=2.5)
+        axes[3].set_xlabel('Cortante (kN)', fontsize=11, fontweight='bold')
+        axes[3].set_ylabel('Profundidad (m)', fontsize=11, fontweight='bold')
+        axes[3].grid(True, alpha=0.3)
+        axes[3].invert_yaxis()
+        axes[3].set_title('Fuerza Cortante', fontsize=13, fontweight='bold')
+        axes[3].axvline(0, color='k', linewidth=0.8, linestyle='--')
+
+        # Presión del suelo
+        axes[4].plot(self.soil_pressures / 1000, self.depths, 'orange', linewidth=2.5)
+        axes[4].set_xlabel('Presión del Suelo (kN/m)', fontsize=11, fontweight='bold')
+        axes[4].set_ylabel('Profundidad (m)', fontsize=11, fontweight='bold')
+        axes[4].grid(True, alpha=0.3)
+        axes[4].invert_yaxis()
+        axes[4].set_title('Presión del Suelo', fontsize=13, fontweight='bold')
+        axes[4].axvline(0, color='k', linewidth=0.8, linestyle='--')
+
+        # Resumen de resultados en el sexto panel
+        axes[5].axis('off')
+        max_defl, depth_max_defl = self.max_deflection()
+        max_mom, depth_max_mom = self.max_moment()
+
+        summary_text = f"""RESULTADOS PRINCIPALES
+
+Deflexión en cabeza:
+  y(0) = {self.head_deflection() * 1000:.3f} mm
+
+Rotación en cabeza:
+  θ(0) = {self.head_rotation() * 1000:.3f} mrad
+  θ(0) = {np.degrees(self.head_rotation()):.4f}°
+
+Deflexión máxima:
+  y_max = {max_defl * 1000:.3f} mm
+  Profundidad: {depth_max_defl:.2f} m
+
+Momento máximo:
+  M_max = {max_mom / 1e3:.2f} kN·m
+  Profundidad: {depth_max_mom:.2f} m
+
+Cortante:
+  V_max = {np.max(self.shears) / 1e3:.2f} kN
+  V_min = {np.min(self.shears) / 1e3:.2f} kN
+
+Presión del suelo máxima:
+  p_max = {np.max(np.abs(self.soil_pressures)) / 1e3:.2f} kN/m
+"""
+        axes[5].text(0.1, 0.95, summary_text, fontsize=11, verticalalignment='top',
+                    family='monospace', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+
+        plt.tight_layout()
+        results_base64 = fig_to_base64(fig_results)
+        plt.close(fig_results)
+
+        # 3. Generar HTML
+        html_content = f"""
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Análisis de Pilote con Carga Lateral</title>
+    <style>
+        body {{
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }}
+        .container {{
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }}
+        h1 {{
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }}
+        h2 {{
+            color: #34495e;
+            margin-top: 30px;
+            border-left: 4px solid #3498db;
+            padding-left: 10px;
+        }}
+        h3 {{
+            color: #7f8c8d;
+        }}
+        .section {{
+            margin: 20px 0;
+        }}
+        table {{
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }}
+        th, td {{
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }}
+        th {{
+            background-color: #3498db;
+            color: white;
+        }}
+        tr:nth-child(even) {{
+            background-color: #f2f2f2;
+        }}
+        .image-container {{
+            text-align: center;
+            margin: 20px 0;
+        }}
+        img {{
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 5px;
+        }}
+        .highlight {{
+            background-color: #fff3cd;
+            padding: 15px;
+            border-left: 4px solid #ffc107;
+            margin: 15px 0;
+        }}
+        .footer {{
+            margin-top: 40px;
+            text-align: center;
+            color: #7f8c8d;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>REPORTE DE ANÁLISIS DE PILOTE CON CARGA LATERAL</h1>
+
+        <div class="section">
+            <h2>1. PROPIEDADES DEL PILOTE</h2>
+            <table>
+                <tr>
+                    <th>Propiedad</th>
+                    <th>Valor</th>
+                </tr>
+                <tr>
+                    <td>Longitud (L)</td>
+                    <td>{pile.length:.2f} m</td>
+                </tr>
+                <tr>
+                    <td>Diámetro (D)</td>
+                    <td>{pile.diameter:.2f} m</td>
+                </tr>
+                <tr>
+                    <td>Módulo de elasticidad (E)</td>
+                    <td>{pile.elastic_modulus/1e9:.2f} GPa</td>
+                </tr>
+                <tr>
+                    <td>Momento de inercia (I)</td>
+                    <td>{pile.moment_inertia:.6f} m⁴</td>
+                </tr>
+                <tr>
+                    <td>Rigidez flexural (EI)</td>
+                    <td>{pile.EI/1e6:.2f} MN·m²</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>2. ESTRATOS DE SUELO</h2>
+            <table>
+                <tr>
+                    <th>Estrato</th>
+                    <th>Profundidad (m)</th>
+                    <th>Espesor (m)</th>
+                    <th>k_h (MN/m³)</th>
+                </tr>
+"""
+
+        for i, layer in enumerate(soil_layers, 1):
+            html_content += f"""
+                <tr>
+                    <td>Estrato {i}</td>
+                    <td>{layer.depth_top:.2f} - {layer.depth_bottom:.2f}</td>
+                    <td>{layer.thickness:.2f}</td>
+                    <td>{layer.k_h/1e6:.2f}</td>
+                </tr>
+"""
+
+        html_content += f"""
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>3. CASO DE CARGA</h2>
+            <table>
+                <tr>
+                    <th>Parámetro</th>
+                    <th>Valor</th>
+                </tr>
+                <tr>
+                    <td>Carga horizontal (P)</td>
+                    <td>{load_case.horizontal_load/1e3:.2f} kN</td>
+                </tr>
+                <tr>
+                    <td>Momento (M)</td>
+                    <td>{load_case.moment/1e3:.2f} kN·m</td>
+                </tr>
+                <tr>
+                    <td>Condición de cabeza</td>
+                    <td>{'Libre' if load_case.free_head else 'Fija'}</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>4. ESQUEMA DEL PILOTE</h2>
+            <div class="image-container">
+                <img src="data:image/png;base64,{scheme_base64}" alt="Esquema del pilote">
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>5. RESULTADOS PRINCIPALES</h2>
+            <div class="highlight">
+                <h3>Desplazamientos en cabeza del pilote:</h3>
+                <ul>
+                    <li><strong>Deflexión:</strong> y(0) = {self.head_deflection() * 1000:.3f} mm</li>
+                    <li><strong>Rotación:</strong> θ(0) = {self.head_rotation() * 1000:.3f} mrad = {np.degrees(self.head_rotation()):.4f}°</li>
+                </ul>
+            </div>
+
+            <table>
+                <tr>
+                    <th>Resultado</th>
+                    <th>Valor</th>
+                    <th>Profundidad</th>
+                </tr>
+                <tr>
+                    <td>Deflexión máxima</td>
+                    <td>{max_defl * 1000:.3f} mm</td>
+                    <td>{depth_max_defl:.2f} m</td>
+                </tr>
+                <tr>
+                    <td>Momento flector máximo</td>
+                    <td>{max_mom / 1e3:.2f} kN·m</td>
+                    <td>{depth_max_mom:.2f} m</td>
+                </tr>
+                <tr>
+                    <td>Cortante máximo</td>
+                    <td>{np.max(self.shears) / 1e3:.2f} kN</td>
+                    <td>{self.depths[np.argmax(self.shears)]:.2f} m</td>
+                </tr>
+                <tr>
+                    <td>Cortante mínimo</td>
+                    <td>{np.min(self.shears) / 1e3:.2f} kN</td>
+                    <td>{self.depths[np.argmin(self.shears)]:.2f} m</td>
+                </tr>
+                <tr>
+                    <td>Presión del suelo máxima</td>
+                    <td>{np.max(np.abs(self.soil_pressures)) / 1e3:.2f} kN/m</td>
+                    <td>{self.depths[np.argmax(np.abs(self.soil_pressures))]:.2f} m</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>6. GRÁFICOS DE RESULTADOS</h2>
+            <div class="image-container">
+                <img src="data:image/png;base64,{results_base64}" alt="Gráficos de resultados">
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Reporte generado con el sistema de análisis de pilotes con carga lateral</p>
+            <p>Método de Winkler - Diferencias Finitas</p>
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+        # Guardar HTML
+        with open(save_path, 'w', encoding='utf-8') as f:
+            f.write(html_content)
+
+        print(f"Reporte completo generado: {save_path}")
+        return save_path
