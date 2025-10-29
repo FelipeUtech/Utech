@@ -261,8 +261,12 @@ class LateralLoadAnalysis:
 
     def _compute_shears(self, deflections: np.ndarray, load: LoadCase) -> np.ndarray:
         """
-        Calcular fuerzas cortantes a partir de deflexiones
-        Cortante = -EI * d³y/dx³
+        Calcular fuerzas cortantes usando la ecuación de equilibrio
+
+        Usa la relación: dV/dz = -k(z) * b * y(z)
+        Integrando desde la cabeza hacia la punta con condición inicial V(0) = P
+
+        Este método asegura continuidad en el diagrama de cortante.
 
         Args:
             deflections: Array de deflexiones
@@ -271,32 +275,26 @@ class LateralLoadAnalysis:
         Returns:
             Array de cortantes (N)
         """
-        shears = np.zeros_like(deflections)
+        n = len(deflections)
+        shears = np.zeros(n)
         dx = self.delta_x
-        dx3 = dx ** 3
-        EI = self.pile.EI
+        b = self.pile.diameter
 
-        # Nodo 0 (cabeza): cortante = carga aplicada (condición de frontera)
+        # Condición de frontera en la cabeza
         shears[0] = load.horizontal_load
 
-        # Diferencia centrada para puntos internos
-        for i in range(2, len(deflections) - 2):
-            d3y_dx3 = (-deflections[i + 2] + 2 * deflections[i + 1] -
-                       2 * deflections[i - 1] + deflections[i - 2]) / (2 * dx3)
-            shears[i] = -EI * d3y_dx3
+        # Integrar hacia abajo usando la ecuación de equilibrio: dV/dz = -k*b*y
+        # Usando el método del trapecio para mayor precisión
+        for i in range(n - 1):
+            # Reacción del suelo en el segmento
+            soil_reaction_i = self.k_values[i] * b * deflections[i]
+            soil_reaction_ip1 = self.k_values[i + 1] * b * deflections[i + 1]
 
-        # Nodo 1: usar diferencia hacia adelante de 4 puntos
-        shears[1] = -EI * (-deflections[4] + 4*deflections[3] -
-                           5*deflections[2] + 2*deflections[1]) / dx3
+            # Método del trapecio: promedio de reacciones en ambos extremos
+            avg_reaction = (soil_reaction_i + soil_reaction_ip1) / 2.0
 
-        n = len(deflections)
-
-        # Nodo n-2: usar diferencia hacia atrás de 4 puntos
-        shears[n - 2] = -EI * (-2*deflections[n - 2] + 5*deflections[n - 3] -
-                               4*deflections[n - 4] + deflections[n - 5]) / dx3
-
-        # Nodo n-1 (punta): cortante = 0 por condición de frontera
-        shears[n - 1] = 0.0
+            # Actualizar cortante: V[i+1] = V[i] - avg_reaction * dx
+            shears[i + 1] = shears[i] - avg_reaction * dx
 
         return shears
 
