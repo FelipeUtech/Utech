@@ -189,7 +189,7 @@ class LateralLoadAnalysis:
         # Calcular derivadas usando diferencias finitas
         rotations = self._compute_rotations(deflections)
         moments = self._compute_moments(deflections)
-        shears = self._compute_shears(deflections)
+        shears = self._compute_shears(deflections, load)
         soil_pressures = self._compute_soil_pressures(deflections)
 
         return AnalysisResults(
@@ -259,13 +259,14 @@ class LateralLoadAnalysis:
 
         return moments
 
-    def _compute_shears(self, deflections: np.ndarray) -> np.ndarray:
+    def _compute_shears(self, deflections: np.ndarray, load: LoadCase) -> np.ndarray:
         """
         Calcular fuerzas cortantes a partir de deflexiones
         Cortante = -EI * d³y/dx³
 
         Args:
             deflections: Array de deflexiones
+            load: Caso de carga (para condición de frontera en cabeza)
 
         Returns:
             Array de cortantes (N)
@@ -275,25 +276,27 @@ class LateralLoadAnalysis:
         dx3 = dx ** 3
         EI = self.pile.EI
 
+        # Nodo 0 (cabeza): cortante = carga aplicada (condición de frontera)
+        shears[0] = load.horizontal_load
+
         # Diferencia centrada para puntos internos
         for i in range(2, len(deflections) - 2):
             d3y_dx3 = (-deflections[i + 2] + 2 * deflections[i + 1] -
                        2 * deflections[i - 1] + deflections[i - 2]) / (2 * dx3)
             shears[i] = -EI * d3y_dx3
 
-        # Extremos y puntos cercanos usando diferencias de orden apropiado
-        shears[0] = -EI * (-deflections[3] + 3 * deflections[2] -
-                           3 * deflections[1] + deflections[0]) / dx3
-
-        shears[1] = -EI * (-deflections[4] + 3 * deflections[3] -
-                           3 * deflections[2] + deflections[1]) / dx3
+        # Nodo 1: usar diferencia hacia adelante de 4 puntos
+        shears[1] = -EI * (-deflections[4] + 4*deflections[3] -
+                           5*deflections[2] + 2*deflections[1]) / dx3
 
         n = len(deflections)
-        shears[n - 1] = -EI * (deflections[n - 1] - 3 * deflections[n - 2] +
-                               3 * deflections[n - 3] - deflections[n - 4]) / dx3
 
-        shears[n - 2] = -EI * (deflections[n - 2] - 3 * deflections[n - 3] +
-                               3 * deflections[n - 4] - deflections[n - 5]) / dx3
+        # Nodo n-2: usar diferencia hacia atrás de 4 puntos
+        shears[n - 2] = -EI * (-2*deflections[n - 2] + 5*deflections[n - 3] -
+                               4*deflections[n - 4] + deflections[n - 5]) / dx3
+
+        # Nodo n-1 (punta): cortante = 0 por condición de frontera
+        shears[n - 1] = 0.0
 
         return shears
 
