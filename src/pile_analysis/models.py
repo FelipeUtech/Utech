@@ -552,90 +552,78 @@ class AnalysisResults:
         scheme_base64 = fig_to_base64(fig_scheme)
         plt.close(fig_scheme)
 
-        # 2. Crear gráficos de resultados (5 gráficos)
-        fig_results, axes = plt.subplots(2, 3, figsize=(18, 12))
-        axes = axes.flatten()
+        # 2. Crear gráficos de resultados (5 gráficos) - Formato científico vertical
+        # Proporción: profundidad > ancho para formato profesional
+        fig_results, axes = plt.subplots(1, 5, figsize=(20, 10))
+
+        # Estilo científico
+        plt.style.use('seaborn-v0_8-paper')
 
         # Deflexión
-        axes[0].plot(self.deflections * 1000, self.depths, 'b-', linewidth=2.5)
-        axes[0].set_xlabel('Deflexión (mm)', fontsize=11, fontweight='bold')
-        axes[0].set_ylabel('Profundidad (m)', fontsize=11, fontweight='bold')
-        axes[0].grid(True, alpha=0.3)
+        axes[0].plot(self.deflections * 1000, self.depths, 'b-', linewidth=2, marker='o',
+                     markersize=0.5, markevery=5)
+        axes[0].set_xlabel('Deflexión, y (mm)', fontsize=10)
+        axes[0].set_ylabel('Profundidad, z (m)', fontsize=10)
+        axes[0].grid(True, alpha=0.3, linestyle='--', linewidth=0.5)
         axes[0].invert_yaxis()
-        axes[0].set_title('Deflexión Lateral', fontsize=13, fontweight='bold')
-        axes[0].axvline(0, color='k', linewidth=0.8, linestyle='--')
+        axes[0].set_title('(a) Deflexión Lateral', fontsize=11, loc='left')
+        axes[0].axvline(0, color='k', linewidth=0.5, linestyle='-', alpha=0.3)
+        axes[0].tick_params(labelsize=9)
 
         # Rotación
-        axes[1].plot(self.rotations * 1000, self.depths, 'g-', linewidth=2.5)
-        axes[1].set_xlabel('Rotación (mrad)', fontsize=11, fontweight='bold')
-        axes[1].set_ylabel('Profundidad (m)', fontsize=11, fontweight='bold')
-        axes[1].grid(True, alpha=0.3)
+        axes[1].plot(self.rotations * 1000, self.depths, 'g-', linewidth=2, marker='s',
+                     markersize=0.5, markevery=5)
+        axes[1].set_xlabel('Rotación, θ (mrad)', fontsize=10)
+        axes[1].set_ylabel('Profundidad, z (m)', fontsize=10)
+        axes[1].grid(True, alpha=0.3, linestyle='--', linewidth=0.5)
         axes[1].invert_yaxis()
-        axes[1].set_title('Rotación', fontsize=13, fontweight='bold')
-        axes[1].axvline(0, color='k', linewidth=0.8, linestyle='--')
+        axes[1].set_title('(b) Rotación', fontsize=11, loc='left')
+        axes[1].axvline(0, color='k', linewidth=0.5, linestyle='-', alpha=0.3)
+        axes[1].tick_params(labelsize=9)
 
         # Momento
-        axes[2].plot(self.moments / 1000, self.depths, 'r-', linewidth=2.5)
-        axes[2].set_xlabel('Momento (kN·m)', fontsize=11, fontweight='bold')
-        axes[2].set_ylabel('Profundidad (m)', fontsize=11, fontweight='bold')
-        axes[2].grid(True, alpha=0.3)
+        axes[2].plot(self.moments / 1000, self.depths, 'r-', linewidth=2, marker='^',
+                     markersize=0.5, markevery=5)
+        axes[2].set_xlabel('Momento, M (kN·m)', fontsize=10)
+        axes[2].set_ylabel('Profundidad, z (m)', fontsize=10)
+        axes[2].grid(True, alpha=0.3, linestyle='--', linewidth=0.5)
         axes[2].invert_yaxis()
-        axes[2].set_title('Momento Flector', fontsize=13, fontweight='bold')
-        axes[2].axvline(0, color='k', linewidth=0.8, linestyle='--')
+        axes[2].set_title('(c) Momento Flector', fontsize=11, loc='left')
+        axes[2].axvline(0, color='k', linewidth=0.5, linestyle='-', alpha=0.3)
+        axes[2].tick_params(labelsize=9)
 
         # Cortante
-        axes[3].plot(self.shears / 1000, self.depths, 'm-', linewidth=2.5)
-        axes[3].set_xlabel('Cortante (kN)', fontsize=11, fontweight='bold')
-        axes[3].set_ylabel('Profundidad (m)', fontsize=11, fontweight='bold')
-        axes[3].grid(True, alpha=0.3)
+        axes[3].plot(self.shears / 1000, self.depths, 'm-', linewidth=2, marker='d',
+                     markersize=0.5, markevery=5)
+        axes[3].set_xlabel('Cortante, V (kN)', fontsize=10)
+        axes[3].set_ylabel('Profundidad, z (m)', fontsize=10)
+        axes[3].grid(True, alpha=0.3, linestyle='--', linewidth=0.5)
         axes[3].invert_yaxis()
-        axes[3].set_title('Fuerza Cortante', fontsize=13, fontweight='bold')
-        axes[3].axvline(0, color='k', linewidth=0.8, linestyle='--')
+        axes[3].set_title('(d) Fuerza Cortante', fontsize=11, loc='left')
+        axes[3].axvline(0, color='k', linewidth=0.5, linestyle='-', alpha=0.3)
+        axes[3].tick_params(labelsize=9)
 
         # Presión del suelo
-        axes[4].plot(self.soil_pressures / 1000, self.depths, 'orange', linewidth=2.5)
-        axes[4].set_xlabel('Presión del Suelo (kN/m)', fontsize=11, fontweight='bold')
-        axes[4].set_ylabel('Profundidad (m)', fontsize=11, fontweight='bold')
-        axes[4].grid(True, alpha=0.3)
+        axes[4].plot(self.soil_pressures / 1000, self.depths, 'darkorange', linewidth=2,
+                     marker='v', markersize=0.5, markevery=5)
+        axes[4].set_xlabel('Presión del suelo, p (kN/m)', fontsize=10)
+        axes[4].set_ylabel('Profundidad, z (m)', fontsize=10)
+        axes[4].grid(True, alpha=0.3, linestyle='--', linewidth=0.5)
         axes[4].invert_yaxis()
-        axes[4].set_title('Presión del Suelo', fontsize=13, fontweight='bold')
-        axes[4].axvline(0, color='k', linewidth=0.8, linestyle='--')
+        axes[4].set_title('(e) Presión del Suelo', fontsize=11, loc='left')
+        axes[4].axvline(0, color='k', linewidth=0.5, linestyle='-', alpha=0.3)
+        axes[4].tick_params(labelsize=9)
 
-        # Resumen de resultados en el sexto panel
-        axes[5].axis('off')
-        max_defl, depth_max_defl = self.max_deflection()
-        max_mom, depth_max_mom = self.max_moment()
-
-        summary_text = f"""RESULTADOS PRINCIPALES
-
-Deflexión en cabeza:
-  y(0) = {self.head_deflection() * 1000:.3f} mm
-
-Rotación en cabeza:
-  θ(0) = {self.head_rotation() * 1000:.3f} mrad
-  θ(0) = {np.degrees(self.head_rotation()):.4f}°
-
-Deflexión máxima:
-  y_max = {max_defl * 1000:.3f} mm
-  Profundidad: {depth_max_defl:.2f} m
-
-Momento máximo:
-  M_max = {max_mom / 1e3:.2f} kN·m
-  Profundidad: {depth_max_mom:.2f} m
-
-Cortante:
-  V_max = {np.max(self.shears) / 1e3:.2f} kN
-  V_min = {np.min(self.shears) / 1e3:.2f} kN
-
-Presión del suelo máxima:
-  p_max = {np.max(np.abs(self.soil_pressures)) / 1e3:.2f} kN/m
-"""
-        axes[5].text(0.1, 0.95, summary_text, fontsize=11, verticalalignment='top',
-                    family='monospace', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
-
+        # Ajustar espaciado entre subplots
         plt.tight_layout()
+        plt.subplots_adjust(wspace=0.35)
+
         results_base64 = fig_to_base64(fig_results)
         plt.close(fig_results)
+
+        # Obtener resultados para el reporte
+        max_defl, depth_max_defl = self.max_deflection()
+        max_mom, depth_max_mom = self.max_moment()
 
         # 3. Generar HTML
         html_content = f"""
@@ -646,82 +634,125 @@ Presión del suelo máxima:
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reporte de Análisis de Pilote con Carga Lateral</title>
     <style>
+        @page {{
+            size: A4;
+            margin: 2cm;
+        }}
         body {{
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 20px;
-            background-color: #f5f5f5;
-            color: #333;
+            font-family: 'Times New Roman', Times, serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #ffffff;
+            color: #000000;
+            line-height: 1.6;
         }}
         .container {{
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 0 auto;
             background-color: white;
-            padding: 30px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 40px 50px;
         }}
         h1 {{
-            color: #2c3e50;
-            border-bottom: 3px solid #3498db;
-            padding-bottom: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            color: #000000;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }}
         h2 {{
-            color: #34495e;
+            font-size: 16px;
+            font-weight: bold;
+            color: #000000;
             margin-top: 30px;
-            border-left: 4px solid #3498db;
-            padding-left: 10px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #000000;
+            padding-bottom: 5px;
         }}
         h3 {{
-            color: #7f8c8d;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333333;
+            margin-top: 15px;
         }}
         .section {{
-            margin: 20px 0;
+            margin: 25px 0;
+            page-break-inside: avoid;
         }}
         table {{
             width: 100%;
             border-collapse: collapse;
             margin: 15px 0;
+            font-size: 11px;
         }}
         th, td {{
-            border: 1px solid #ddd;
-            padding: 12px;
+            border: 1px solid #000000;
+            padding: 8px 12px;
             text-align: left;
         }}
         th {{
-            background-color: #3498db;
-            color: white;
+            background-color: #e8e8e8;
+            color: #000000;
+            font-weight: bold;
         }}
         tr:nth-child(even) {{
-            background-color: #f2f2f2;
+            background-color: #f9f9f9;
         }}
         .image-container {{
             text-align: center;
-            margin: 20px 0;
+            margin: 30px 0;
+            page-break-inside: avoid;
         }}
         img {{
             max-width: 100%;
             height: auto;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 5px;
+            border: 1px solid #cccccc;
+            padding: 10px;
+            background-color: #fafafa;
+        }}
+        .caption {{
+            font-size: 11px;
+            font-style: italic;
+            margin-top: 10px;
+            text-align: center;
+            color: #333333;
         }}
         .highlight {{
-            background-color: #fff3cd;
-            padding: 15px;
-            border-left: 4px solid #ffc107;
+            background-color: #f0f0f0;
+            padding: 15px 20px;
+            border: 1px solid #cccccc;
             margin: 15px 0;
+            font-size: 12px;
         }}
         .footer {{
-            margin-top: 40px;
+            margin-top: 50px;
             text-align: center;
-            color: #7f8c8d;
-            border-top: 1px solid #ddd;
+            font-size: 10px;
+            color: #666666;
+            border-top: 1px solid #cccccc;
             padding-top: 20px;
+        }}
+        .metadata {{
+            font-size: 11px;
+            color: #666666;
+            text-align: center;
+            margin-bottom: 30px;
+        }}
+        ul {{
+            font-size: 12px;
+        }}
+        strong {{
+            font-weight: bold;
         }}
     </style>
 </head>
 <body>
     <div class="container">
         <h1>REPORTE DE ANÁLISIS DE PILOTE CON CARGA LATERAL</h1>
+        <div class="metadata">
+            Método de Winkler | Análisis por Diferencias Finitas
+        </div>
 
         <div class="section">
             <h2>1. PROPIEDADES DEL PILOTE</h2>
@@ -801,9 +832,10 @@ Presión del suelo máxima:
         </div>
 
         <div class="section">
-            <h2>4. ESQUEMA DEL PILOTE</h2>
+            <h2>4. MODELO GEOMÉTRICO</h2>
             <div class="image-container">
                 <img src="data:image/png;base64,{scheme_base64}" alt="Esquema del pilote">
+                <div class="caption">Figura 1. Esquema del pilote empotrado en suelo estratificado y condiciones de carga aplicadas.</div>
             </div>
         </div>
 
@@ -852,15 +884,16 @@ Presión del suelo máxima:
         </div>
 
         <div class="section">
-            <h2>6. GRÁFICOS DE RESULTADOS</h2>
+            <h2>6. DISTRIBUCIÓN DE RESPUESTAS A LO LARGO DE LA PROFUNDIDAD</h2>
             <div class="image-container">
                 <img src="data:image/png;base64,{results_base64}" alt="Gráficos de resultados">
+                <div class="caption">Figura 2. Distribución de (a) deflexión lateral, (b) rotación, (c) momento flector, (d) fuerza cortante y (e) presión del suelo a lo largo de la profundidad del pilote.</div>
             </div>
         </div>
 
         <div class="footer">
-            <p>Reporte generado con el sistema de análisis de pilotes con carga lateral</p>
-            <p>Método de Winkler - Diferencias Finitas</p>
+            <p><strong>Nota:</strong> Este reporte fue generado automáticamente usando el método de Winkler para la modelación de la interacción suelo-pilote y el método de diferencias finitas para la solución numérica de la ecuación diferencial de cuarto orden que gobierna la deflexión lateral del pilote.</p>
+            <p style="margin-top: 15px;">Sistema de Análisis de Pilotes con Carga Lateral | © 2025</p>
         </div>
     </div>
 </body>
