@@ -128,6 +128,104 @@ class SoilLayer:
 
 
 @dataclass
+class SoilLayerNonlinear:
+    """
+    Propiedades de un estrato de suelo con comportamiento no lineal hiperbólico
+
+    Modelo Duncan-Chang: k_h(y) = k_h_inicial / (1 + k_h_inicial·b·|y|/p_ult)
+
+    Attributes:
+        depth_top: Profundidad superior del estrato (m)
+        depth_bottom: Profundidad inferior del estrato (m)
+        k_h_inicial: Coeficiente de reacción horizontal inicial (N/m^3)
+        p_ult: Presión última del suelo (N/m)
+    """
+    depth_top: float
+    depth_bottom: float
+    k_h_inicial: float
+    p_ult: float
+
+    def __post_init__(self):
+        """Validar propiedades"""
+        if self.depth_bottom <= self.depth_top:
+            raise ValueError("La profundidad inferior debe ser mayor que la superior")
+        if self.k_h_inicial <= 0:
+            raise ValueError("El coeficiente de reacción inicial debe ser positivo")
+        if self.p_ult <= 0:
+            raise ValueError("La presión última debe ser positiva")
+
+    @property
+    def thickness(self) -> float:
+        """Espesor del estrato (m)"""
+        return self.depth_bottom - self.depth_top
+
+    def contains_depth(self, depth: float) -> bool:
+        """Verificar si una profundidad está dentro de este estrato"""
+        return self.depth_top <= depth < self.depth_bottom
+
+    def get_k_h(self, deflection: float, pile_diameter: float) -> float:
+        """
+        Calcular rigidez no lineal según el modelo Duncan-Chang
+
+        k_h(y) = k_h_inicial / (1 + k_h_inicial·b·|y|/p_ult)
+
+        Args:
+            deflection: Deflexión lateral (m)
+            pile_diameter: Diámetro del pilote (m)
+
+        Returns:
+            Rigidez secante k_h (N/m³)
+        """
+        factor = (self.k_h_inicial * pile_diameter * abs(deflection)) / self.p_ult
+        return self.k_h_inicial / (1.0 + factor)
+
+    def get_pressure(self, deflection: float, pile_diameter: float) -> float:
+        """
+        Calcular presión del suelo según el modelo Duncan-Chang
+
+        p(y) = k_h_inicial·b·y / (1 + k_h_inicial·b·|y|/p_ult)
+
+        Args:
+            deflection: Deflexión lateral (m)
+            pile_diameter: Diámetro del pilote (m)
+
+        Returns:
+            Presión del suelo (N/m)
+        """
+        k_h = self.get_k_h(deflection, pile_diameter)
+        return k_h * pile_diameter * deflection
+
+    @classmethod
+    def from_elastic_modulus(cls, depth_top: float, depth_bottom: float,
+                            elastic_modulus: float, pile_diameter: float,
+                            ultimate_strain: float = 0.02,
+                            poisson_ratio: float = 0.3):
+        """
+        Crear un estrato no lineal a partir del módulo de Young
+
+        Args:
+            depth_top: Profundidad superior del estrato (m)
+            depth_bottom: Profundidad inferior del estrato (m)
+            elastic_modulus: Módulo de Young del suelo (Pa)
+            pile_diameter: Diámetro del pilote (m)
+            ultimate_strain: Deformación última del suelo (default=0.02 = 2%)
+            poisson_ratio: Coeficiente de Poisson (default=0.3)
+
+        Returns:
+            SoilLayerNonlinear con parámetros calculados
+        """
+        # Rigidez inicial
+        k_h_inicial = elastic_modulus / (1.5 * pile_diameter * (1 - poisson_ratio**2))
+
+        # Presión última estimada (basada en resistencia del suelo)
+        # p_ult ≈ σ_ult × D, donde σ_ult = E × ε_ult
+        sigma_ult = elastic_modulus * ultimate_strain
+        p_ult = sigma_ult * pile_diameter
+
+        return cls(depth_top, depth_bottom, k_h_inicial, p_ult)
+
+
+@dataclass
 class LoadCase:
     """
     Caso de carga aplicado en la cabeza del pilote
