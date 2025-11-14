@@ -1,0 +1,13 @@
+# Archivos binarios generados
+*.bin
+*.lst
+*.sym
+
+# Archivos temporales
+*~
+*.swp
+*.swo
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db

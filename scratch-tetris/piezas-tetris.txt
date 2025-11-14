@@ -1,0 +1,301 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║              LAS 7 PIEZAS DEL TETRIS                                 ║
+║              Usa estas formas para dibujar en Scratch                ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+
+═══════════════════════════════════════════════════════════════════════
+🟨 PIEZA O (Cuadrado) - COLOR: AMARILLO
+═══════════════════════════════════════════════════════════════════════
+
+    ██ ██
+    ██ ██
+
+Rotación: No cambia (es un cuadrado)
+
+Cómo dibujar en Scratch:
+1. Selecciona la herramienta "Rectángulo"
+2. Dibuja un cuadrado de 20x20 píxeles
+3. Rellena de color AMARILLO
+4. Duplica y coloca: 2x2
+
+
+═══════════════════════════════════════════════════════════════════════
+🟦 PIEZA I (Línea) - COLOR: CYAN/AZUL CLARO
+═══════════════════════════════════════════════════════════════════════
+
+Horizontal:
+    ██ ██ ██ ██
+
+Vertical:
+    ██
+    ██
+    ██
+    ██
+
+Cómo dibujar en Scratch:
+1. Dibuja 4 cuadrados de 10x10
+2. Alinéalos en una línea horizontal
+3. Rellena de color CYAN
+4. Para rotar: girar 90°
+
+
+═══════════════════════════════════════════════════════════════════════
+🟪 PIEZA T - COLOR: MORADO/PÚRPURA
+═══════════════════════════════════════════════════════════════════════
+
+Rotación 1:           Rotación 2:
+    ██ ██ ██              ██
+       ██                 ██ ██
+                          ██
+
+Rotación 3:           Rotación 4:
+       ██                 ██
+    ██ ██ ██           ██ ██
+                          ██
+
+Cómo dibujar en Scratch:
+1. Dibuja 3 cuadrados en línea horizontal
+2. Dibuja 1 cuadrado debajo del centro
+3. Rellena de MORADO
+
+
+═══════════════════════════════════════════════════════════════════════
+🟧 PIEZA L - COLOR: NARANJA
+═══════════════════════════════════════════════════════════════════════
+
+Rotación 1:           Rotación 2:
+    ██                 ██ ██ ██
+    ██                 ██
+    ██ ██
+
+Rotación 3:           Rotación 4:
+    ██ ██                    ██
+       ██              ██ ██ ██
+       ██
+
+Cómo dibujar en Scratch:
+1. Dibuja una L
+2. 3 cuadrados verticales
+3. 1 cuadrado a la derecha abajo
+4. Rellena de NARANJA
+
+
+═══════════════════════════════════════════════════════════════════════
+🟦 PIEZA J (L inversa) - COLOR: AZUL
+═══════════════════════════════════════════════════════════════════════
+
+Rotación 1:           Rotación 2:
+       ██              ██
+       ██              ██ ██ ██
+    ██ ██
+
+Rotación 3:           Rotación 4:
+    ██ ██              ██ ██ ██
+    ██                       ██
+    ██
+
+Cómo dibujar en Scratch:
+1. Igual que la L pero al revés
+2. Rellena de AZUL
+
+
+═══════════════════════════════════════════════════════════════════════
+🟥 PIEZA Z - COLOR: ROJO
+═══════════════════════════════════════════════════════════════════════
+
+Horizontal:           Vertical:
+    ██ ██                 ██
+       ██ ██           ██ ██
+                       ██
+
+Cómo dibujar en Scratch:
+1. Dibuja forma de Z
+2. 2 cuadrados arriba izquierda
+3. 2 cuadrados abajo derecha
+4. Rellena de ROJO
+
+
+═══════════════════════════════════════════════════════════════════════
+🟩 PIEZA S (Z inversa) - COLOR: VERDE
+═══════════════════════════════════════════════════════════════════════
+
+Horizontal:           Vertical:
+       ██ ██           ██
+    ██ ██              ██ ██
+                          ██
+
+Cómo dibujar en Scratch:
+1. Igual que Z pero al revés
+2. Rellena de VERDE
+
+
+═══════════════════════════════════════════════════════════════════════
+🎨 COLORES EXACTOS PARA SCRATCH
+═══════════════════════════════════════════════════════════════════════
+
+En Scratch, usa estos códigos de color:
+
+🟨 AMARILLO (O):  RGB: 255, 255, 0   o  HSL: 60°, 100%, 50%
+🟦 CYAN (I):      RGB: 0, 255, 255   o  HSL: 180°, 100%, 50%
+🟪 MORADO (T):    RGB: 128, 0, 128   o  HSL: 300°, 100%, 25%
+🟧 NARANJA (L):   RGB: 255, 128, 0   o  HSL: 30°, 100%, 50%
+🟦 AZUL (J):      RGB: 0, 0, 255     o  HSL: 240°, 100%, 50%
+🟥 ROJO (Z):      RGB: 255, 0, 0     o  HSL: 0°, 100%, 50%
+🟩 VERDE (S):     RGB: 0, 255, 0     o  HSL: 120°, 100%, 50%
+
+
+═══════════════════════════════════════════════════════════════════════
+📏 TAMAÑOS RECOMENDADOS
+═══════════════════════════════════════════════════════════════════════
+
+Para un Tetris que se vea bien en Scratch:
+
+• Cada cuadrito: 15 x 15 píxeles
+• Tablero: 150 píxeles de ancho (10 cuadros)
+• Tablero: 300 píxeles de alto (20 cuadros)
+
+Posiciones en Scratch:
+• Centro superior: x: 0, y: 170
+• Centro inferior: x: 0, y: -140
+
+
+═══════════════════════════════════════════════════════════════════════
+🎯 VERSIÓN SIMPLIFICADA - SOLO 4 PIEZAS
+═══════════════════════════════════════════════════════════════════════
+
+Si 7 piezas es mucho, empieza con estas 4:
+
+1. ⬜ CUADRADO (O) - No rota
+2. ▬  LÍNEA (I) - Fácil de rotar
+3. T  T (T) - Divertida de rotar
+4. L  L (L) - Clásica
+
+
+═══════════════════════════════════════════════════════════════════════
+🖌️ TUTORIAL PASO A PASO PARA DIBUJAR UNA PIEZA
+═══════════════════════════════════════════════════════════════════════
+
+Ejemplo: PIEZA T MORADA
+
+Paso 1: Crear nuevo sprite
+   • Haz clic en el gato con +
+   • Selecciona "Pintar"
+
+Paso 2: Configurar cuadrícula (opcional pero útil)
+   • En el editor, haz zoom
+   • Activa la cuadrícula si está disponible
+
+Paso 3: Dibujar el primer cuadrado
+   • Herramienta: Rectángulo
+   • Sin contorno
+   • Relleno: Morado
+   • Dibuja un cuadrado de 15x15
+
+Paso 4: Duplicar cuadrados
+   • Selecciona el cuadrado (herramienta selección)
+   • Copia (Ctrl+C)
+   • Pega (Ctrl+V) 3 veces
+   • Acomoda en forma de T
+
+Paso 5: Centrar la pieza
+   • Haz clic en "Fijar centro del disfraz"
+   • Arrastra la cruz al centro de rotación
+   • Para la T: centro en el cuadrado del medio
+
+Paso 6: Nombrar
+   • Dale nombre: "PiezaT"
+   • Guarda
+
+Paso 7: Crear disfraces para rotaciones (opcional)
+   • Duplica el disfraz (clic derecho)
+   • Rota manualmente 90°
+   • Repite 4 veces
+
+
+═══════════════════════════════════════════════════════════════════════
+💡 TIPS PROFESIONALES
+═══════════════════════════════════════════════════════════════════════
+
+✨ Usa capas: Dibuja primero todos los cuadrados, luego agrúpalos
+
+🎨 Sombras: Agrega un borde oscuro para que se vea en 3D
+   • Dibuja el cuadrado principal
+   • Dibuja otro más pequeño encima
+   • Dale efecto de profundidad
+
+🌈 Degradados: En vez de color sólido, usa degradado
+   • Hace que las piezas se vean más modernas
+   • Scratch tiene herramienta de degradado
+
+⚡ Animación: Crea disfraces con ligeras variaciones
+   • Cambia entre disfraces rápidamente
+   • Da efecto de "brillo"
+
+
+═══════════════════════════════════════════════════════════════════════
+🎲 CÓMO HACER QUE APAREZCAN PIEZAS ALEATORIAS
+═══════════════════════════════════════════════════════════════════════
+
+En el ESCENARIO:
+
+🎬 cuando se presione la bandera verde
+   │
+   └─ por siempre
+      │
+      ├─ fijar [NúmeroPieza ▼] a (número al azar entre (1) y (7))
+      │
+      ├─ si <(NúmeroPieza) = [1]> entonces
+      │  └─ enviar [ActivarI ▼]
+      │
+      ├─ si <(NúmeroPieza) = [2]> entonces
+      │  └─ enviar [ActivarO ▼]
+      │
+      ├─ si <(NúmeroPieza) = [3]> entonces
+      │  └─ enviar [ActivarT ▼]
+      │
+      └─ [...continúa para cada pieza...]
+      │
+      └─ esperar hasta que <(PiezaColocada) = [1]>
+
+
+Cada PIEZA escucha su mensaje:
+
+🎬 al recibir [ActivarT ▼]
+   └─ [... código de movimiento ...]
+
+
+═══════════════════════════════════════════════════════════════════════
+📊 PLANTILLA DEL TABLERO
+═══════════════════════════════════════════════════════════════════════
+
+Dibuja esto en el ESCENARIO (Fondo):
+
+┌─────────────────────┐  ← y: 180 (arriba)
+│                     │
+│   ÁREA DE JUEGO     │  ← 10 cuadros de ancho
+│                     │  ← 20 cuadros de alto
+│   (10 x 20)         │
+│                     │
+│                     │
+│                     │
+│                     │
+│                     │
+└─────────────────────┘  ← y: -140 (abajo)
+    x: -75    x: 75
+
+Lateral izquierdo: Panel de puntuación
+Lateral derecho: Próxima pieza
+
+
+═══════════════════════════════════════════════════════════════════════
+
+¡Ya tienes todo para crear tus piezas de Tetris! 🎮✨
+
+Recuerda:
+• Empieza simple (1 pieza)
+• Prueba que funcione
+• Agrega más piezas gradualmente
+• ¡Diviértete!
+
+═══════════════════════════════════════════════════════════════════════

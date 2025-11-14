@@ -1,0 +1,281 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║              TETRIS EN SCRATCH - BLOQUES DE CÓDIGO                   ║
+║              Copia estos bloques en Scratch                          ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+📋 ÍNDICE
+=========
+1. Variables necesarias
+2. Código para el Escenario
+3. Código para cada Pieza
+4. Versión Simplificada (Recomendada para empezar)
+5. Mejoras avanzadas
+
+
+═══════════════════════════════════════════════════════════════════════
+1️⃣ VARIABLES NECESARIAS
+═══════════════════════════════════════════════════════════════════════
+
+Crea estas variables (haz clic en "Variables" > "Crear una variable"):
+
+✓ Puntos (para todos los objetos)
+✓ Velocidad (para todos los objetos)
+✓ PiezaActual (para todos los objetos)
+✓ JuegoActivo (para todos los objetos)
+
+
+═══════════════════════════════════════════════════════════════════════
+2️⃣ CÓDIGO PARA EL ESCENARIO (Fondo)
+═══════════════════════════════════════════════════════════════════════
+
+🎬 Cuando se presione la bandera verde
+   │
+   ├─ fijar [Puntos ▼] a [0]
+   ├─ fijar [Velocidad ▼] a [1]
+   ├─ fijar [JuegoActivo ▼] a [1]
+   │
+   ├─ enviar [Nueva Pieza ▼]
+   │
+   └─ por siempre
+      │
+      └─ esperar (1) segundos
+      └─ si <(Puntos) > [100]> entonces
+         └─ fijar [Velocidad ▼] a [1.5]
+
+
+═══════════════════════════════════════════════════════════════════════
+3️⃣ CÓDIGO PARA CADA PIEZA (Sprite)
+═══════════════════════════════════════════════════════════════════════
+
+╭─────────────────────────────────────────────────────────────────────╮
+│ BLOQUE 1: Inicializar la pieza                                     │
+╰─────────────────────────────────────────────────────────────────────╯
+
+🎬 al recibir [Nueva Pieza ▼]
+   │
+   ├─ mostrar
+   ├─ ir a x: (0) y: (170)
+   ├─ fijar dirección a (0)
+   │
+   └─ repetir hasta que <¿tocando [edge ▼]?>>
+      │
+      ├─ si <tecla [flecha izquierda ▼] presionada?> entonces
+      │  ├─ cambiar x por (-15)
+      │  ├─ si <¿tocando [edge ▼]?>> entonces
+      │  │  └─ cambiar x por (15)
+      │  └─ tocar sonido [pop ▼]
+      │
+      ├─ si <tecla [flecha derecha ▼] presionada?> entonces
+      │  ├─ cambiar x por (15)
+      │  ├─ si <¿tocando [edge ▼]?>> entonces
+      │  │  └─ cambiar x por (-15)
+      │  └─ tocar sonido [pop ▼]
+      │
+      ├─ si <tecla [flecha abajo ▼] presionada?> entonces
+      │  └─ cambiar y por ((Velocidad) * (-3))
+      │
+      ├─ si <tecla [espacio ▼] presionada?> entonces
+      │  ├─ girar ↻ (90) grados
+      │  ├─ esperar (0.2) segundos
+      │  └─ tocar sonido [boing ▼]
+      │
+      ├─ esperar (0.05) segundos
+      └─ cambiar y por ((Velocidad) * (-1))
+   │
+   ├─ esconder
+   ├─ cambiar [Puntos ▼] por (10)
+   │
+   └─ enviar [Nueva Pieza ▼]
+
+
+╭─────────────────────────────────────────────────────────────────────╮
+│ BLOQUE 2: Detectar Game Over                                       │
+╰─────────────────────────────────────────────────────────────────────╯
+
+🎬 al recibir [Nueva Pieza ▼]
+   │
+   ├─ ir a x: (0) y: (170)
+   ├─ esperar (0.1) segundos
+   │
+   └─ si <¿tocando [edge ▼]?>> entonces
+      ├─ fijar [JuegoActivo ▼] a [0]
+      ├─ decir [¡Game Over!] por (2) segundos
+      └─ detener [todo ▼]
+
+
+═══════════════════════════════════════════════════════════════════════
+4️⃣ VERSIÓN SIMPLIFICADA - ¡EMPIEZA AQUÍ! ⭐
+═══════════════════════════════════════════════════════════════════════
+
+Esta es la versión MÁS SIMPLE para que funcione rápido:
+
+╭─────────────────────────────────────────────────────────────────────╮
+│ PARA UNA SOLA PIEZA (Sprite)                                       │
+╰─────────────────────────────────────────────────────────────────────╯
+
+🎬 Cuando se presione la bandera verde
+   │
+   └─ por siempre
+      │
+      ├─ ir a x: (0) y: (170)
+      │
+      └─ repetir hasta que <(posición y) < [-160]>
+         │
+         ├─ si <tecla [flecha izquierda ▼] presionada?> entonces
+         │  └─ cambiar x por (-10)
+         │
+         ├─ si <tecla [flecha derecha ▼] presionada?> entonces
+         │  └─ cambiar x por (10)
+         │
+         ├─ si <tecla [espacio ▼] presionada?> entonces
+         │  ├─ girar ↻ (90) grados
+         │  └─ esperar (0.2) segundos
+         │
+         ├─ esperar (0.3) segundos
+         └─ cambiar y por (-10)
+
+
+═══════════════════════════════════════════════════════════════════════
+5️⃣ MEJORAS AVANZADAS
+═══════════════════════════════════════════════════════════════════════
+
+╭─────────────────────────────────────────────────────────────────────╮
+│ A) Agregar Sonidos                                                  │
+╰─────────────────────────────────────────────────────────────────────╯
+
+Después de cada acción, agrega:
+
+└─ tocar sonido [pop ▼]           ← Al moverse
+└─ tocar sonido [boing ▼]         ← Al rotar
+└─ tocar sonido [cheer ▼]         ← Al ganar puntos
+
+
+╭─────────────────────────────────────────────────────────────────────╮
+│ B) Efectos Visuales                                                 │
+╰─────────────────────────────────────────────────────────────────────╯
+
+🎬 cuando recibo [Puntos ▼]
+   │
+   ├─ cambiar efecto [color ▼] por (25)
+   ├─ cambiar tamaño por (10)
+   ├─ esperar (0.2) segundos
+   ├─ fijar tamaño a (100) %
+   └─ quitar efectos gráficos
+
+
+╭─────────────────────────────────────────────────────────────────────╮
+│ C) Música de Fondo                                                  │
+╰─────────────────────────────────────────────────────────────────────╯
+
+En el ESCENARIO:
+
+🎬 Cuando se presione la bandera verde
+   │
+   └─ por siempre
+      ├─ tocar sonido [Dance Around ▼] hasta que termine
+      └─ esperar (0.5) segundos
+
+
+╭─────────────────────────────────────────────────────────────────────╮
+│ D) Crear Clones (Piezas que se quedan)                            │
+╰─────────────────────────────────────────────────────────────────────╯
+
+En cada PIEZA:
+
+🎬 cuando recibo [Nueva Pieza ▼]
+   │
+   └─ repetir hasta que <¿tocando [edge ▼]?>>
+      │
+      ├─ [... movimiento ...]
+      │
+      └─ si <(posición y) < [-140]> entonces
+         ├─ crear clon de [mí mismo ▼]
+         └─ esconder
+
+🎬 al comenzar como clon
+   │
+   ├─ mostrar
+   └─ por siempre
+      └─ esperar (0.1) segundos
+
+
+═══════════════════════════════════════════════════════════════════════
+📊 CATEGORÍAS DE BLOQUES EN SCRATCH
+═══════════════════════════════════════════════════════════════════════
+
+🟦 MOVIMIENTO       - ir a, cambiar x/y, girar
+🟪 APARIENCIA       - mostrar, esconder, efectos, disfraces
+🟥 SONIDO           - tocar sonido
+💛 EVENTOS          - al presionar bandera, al recibir
+🟧 CONTROL          - por siempre, repetir, si entonces
+🟩 SENSORES         - ¿tocando?, tecla presionada, posición
+🟦 OPERADORES       - +, -, <, >, y, o
+🟨 VARIABLES        - fijar, cambiar
+🟣 MIS BLOQUES      - crear tus propios bloques
+
+
+═══════════════════════════════════════════════════════════════════════
+🎯 ORDEN RECOMENDADO PARA CONSTRUIR
+═══════════════════════════════════════════════════════════════════════
+
+Paso 1: ✅ Crear una pieza que caiga
+Paso 2: ✅ Agregar movimiento izquierda/derecha
+Paso 3: ✅ Agregar rotación con espacio
+Paso 4: ✅ Hacer que vuelva arriba al tocar el suelo
+Paso 5: ✅ Agregar puntos
+Paso 6: ✅ Agregar sonidos
+Paso 7: ✅ Agregar más piezas
+Paso 8: ✅ Hacer que las piezas se queden (clones)
+Paso 9: ✅ Detectar líneas completas
+Paso 10: ✅ Game Over
+
+
+═══════════════════════════════════════════════════════════════════════
+💡 CONSEJOS IMPORTANTES
+═══════════════════════════════════════════════════════════════════════
+
+✓ Guarda tu proyecto con frecuencia (Archivo > Guardar)
+✓ Pon nombres claros a tus variables
+✓ Prueba cada bloque antes de agregar el siguiente
+✓ Si algo no funciona, revisa los números (x, y)
+✓ Usa "Proyecto > Turbo Mode" si va muy lento
+✓ Haz clic en "Ver dentro" en proyectos de otros para aprender
+
+
+═══════════════════════════════════════════════════════════════════════
+🐛 SOLUCIÓN DE PROBLEMAS COMUNES
+═══════════════════════════════════════════════════════════════════════
+
+❌ "La pieza no se mueve"
+   → Verifica que esté visible (bloque "mostrar")
+   → Revisa que el bucle "por siempre" esté activo
+
+❌ "La pieza se sale de la pantalla"
+   → Agrega bloques "si tocando edge entonces..."
+   → Limita los valores de x entre -200 y 200
+
+❌ "No rota bien"
+   → Centra el sprite en el editor de disfraces
+   → Usa el botón "Fijar centro del disfraz"
+
+❌ "Va muy rápido"
+   → Aumenta el tiempo en "esperar X segundos"
+   → Prueba con 0.5 o 1 segundo
+
+❌ "No se oye el sonido"
+   → Verifica el volumen de la computadora
+   → Agrega un bloque "fijar volumen a 100%"
+
+
+═══════════════════════════════════════════════════════════════════════
+📚 RECURSOS ADICIONALES
+═══════════════════════════════════════════════════════════════════════
+
+🌐 Scratch oficial: https://scratch.mit.edu
+📹 Video tutoriales: YouTube "Scratch tutorial Tetris"
+💬 Comunidad: https://scratch.mit.edu/discuss/
+🎓 Curso gratis: https://code.org
+
+═══════════════════════════════════════════════════════════════════════
+
+¡Diviértete programando! 🎮✨
