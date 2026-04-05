@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa de YouTubers en Latinoamérica</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        #map { width: 100%; height: 100vh; }
+
+        .info-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+            max-width: 320px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .info-panel h2 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: #333;
+            border-bottom: 2px solid #ff0000;
+            padding-bottom: 6px;
+        }
+        .country-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+        .country-row:hover { background: #f5f5f5; }
+        .country-name { font-weight: 500; color: #444; }
+        .country-count {
+            background: #ff0000;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 12px;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .legend {
+            position: absolute;
+            bottom: 30px;
+            left: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+        }
+        .legend h4 { margin-bottom: 8px; font-size: 14px; }
+        .legend-item { display: flex; align-items: center; margin-bottom: 4px; font-size: 12px; }
+        .legend-color { width: 20px; height: 14px; margin-right: 8px; border: 1px solid #999; }
+
+        .edit-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .edit-modal.active { display: flex; }
+        .edit-content {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            min-width: 300px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .edit-content h3 { margin-bottom: 16px; color: #333; }
+        .edit-content label { display: block; margin-bottom: 4px; font-weight: 500; color: #555; }
+        .edit-content input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            margin-bottom: 16px;
+        }
+        .edit-content input:focus { border-color: #ff0000; outline: none; }
+        .btn-group { display: flex; gap: 8px; }
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-save { background: #ff0000; color: white; }
+        .btn-save:hover { background: #cc0000; }
+        .btn-cancel { background: #eee; color: #333; }
+        .btn-cancel:hover { background: #ddd; }
+
+        .title-bar {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: rgba(255,255,255,0.95);
+            padding: 10px 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        .title-bar h1 { font-size: 20px; color: #333; }
+        .title-bar p { font-size: 12px; color: #777; margin-top: 2px; }
+
+        .country-label {
+            background: none !important;
+            border: none !important;
+            box-shadow: none !important;
+            font-weight: bold;
+            font-size: 13px;
+            color: #222;
+            text-shadow: 1px 1px 2px white, -1px -1px 2px white, 1px -1px 2px white, -1px 1px 2px white;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <div class="title-bar">
+        <h1>YouTubers en Latinoamérica</h1>
+        <p>Haz clic en un país para editar el número de YouTubers</p>
+    </div>
+
+    <div class="info-panel" id="infoPanel">
+        <h2>Ranking por País</h2>
+        <div id="rankingList"></div>
+        <div style="margin-top: 12px; font-size: 12px; color: #999; text-align: center;">
+            Total: <strong id="totalCount">0</strong> YouTubers
+        </div>
+    </div>
+
+    <div class="legend" id="legend"></div>
+
+    <div class="edit-modal" id="editModal">
+        <div class="edit-content">
+            <h3 id="editTitle">Editar país</h3>
+            <label for="editInput">Número de YouTubers:</label>
+            <input type="number" id="editInput" min="0" step="1" />
+            <div class="btn-group">
+                <button class="btn btn-cancel" onclick="closeModal()">Cancelar</button>
+                <button class="btn btn-save" onclick="saveEdit()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // ====================================================================
+        // DATOS DE YOUTUBERS POR PAÍS — MODIFICA AQUÍ LOS VALORES
+        // ====================================================================
+        const youtuberData = {
+            "Mexico":                 820,
+            "Brazil":                 1450,
+            "Argentina":              410,
+            "Colombia":               380,
+            "Chile":                  290,
+            "Peru":                   260,
+            "Venezuela":              200,
+            "Ecuador":                120,
+            "Guatemala":              85,
+            "Cuba":                   40,
+            "Dominican Republic":     75,
+            "Honduras":               55,
+            "Paraguay":               45,
+            "El Salvador":            50,
+            "Nicaragua":              35,
+            "Costa Rica":             90,
+            "Panama":                 70,
+            "Uruguay":                65,
+            "Bolivia":                80,
+            "Puerto Rico":            60,
+            "Haiti":                  15,
+            "Jamaica":                30,
+            "Trinidad and Tobago":    20,
+            "Guyana":                 8,
+            "Suriname":               5,
+            "Belize":                 10,
+            "French Guiana":          3,
+        };
+
+        // Traducción de nombres para mostrar en español
+        const countryNames = {
+            "Mexico": "México",
+            "Brazil": "Brasil",
+            "Argentina": "Argentina",
+            "Colombia": "Colombia",
+            "Chile": "Chile",
+            "Peru": "Perú",
+            "Venezuela": "Venezuela",
+            "Ecuador": "Ecuador",
+            "Guatemala": "Guatemala",
+            "Cuba": "Cuba",
+            "Dominican Republic": "Rep. Dominicana",
+            "Honduras": "Honduras",
+            "Paraguay": "Paraguay",
+            "El Salvador": "El Salvador",
+            "Nicaragua": "Nicaragua",
+            "Costa Rica": "Costa Rica",
+            "Panama": "Panamá",
+            "Uruguay": "Uruguay",
+            "Bolivia": "Bolivia",
+            "Puerto Rico": "Puerto Rico",
+            "Haiti": "Haití",
+            "Jamaica": "Jamaica",
+            "Trinidad and Tobago": "Trinidad y Tobago",
+            "Guyana": "Guyana",
+            "Suriname": "Surinam",
+            "Belize": "Belice",
+            "French Guiana": "Guayana Francesa",
+        };
+
+        // Coordenadas centro de cada país para labels
+        const countryCoords = {
+            "Mexico": [23.6, -102.5],
+            "Brazil": [-14.2, -51.9],
+            "Argentina": [-38.4, -63.6],
+            "Colombia": [4.5, -74.3],
+            "Chile": [-35.7, -71.5],
+            "Peru": [-9.2, -75.0],
+            "Venezuela": [6.4, -66.6],
+            "Ecuador": [-1.8, -78.2],
+            "Guatemala": [15.8, -90.2],
+            "Cuba": [21.5, -79.0],
+            "Dominican Republic": [18.7, -70.2],
+            "Honduras": [15.2, -86.2],
+            "Paraguay": [-23.4, -58.4],
+            "El Salvador": [13.8, -88.9],
+            "Nicaragua": [12.9, -85.2],
+            "Costa Rica": [9.7, -83.8],
+            "Panama": [8.5, -80.8],
+            "Uruguay": [-32.5, -55.8],
+            "Bolivia": [-16.3, -63.6],
+            "Puerto Rico": [18.2, -66.6],
+            "Haiti": [19.0, -72.3],
+            "Jamaica": [18.1, -77.3],
+            "Trinidad and Tobago": [10.4, -61.2],
+            "Guyana": [4.9, -58.9],
+            "Suriname": [3.9, -56.0],
+            "Belize": [17.2, -88.5],
+            "French Guiana": [3.9, -53.1],
+        };
+
+        // Países LATAM (ISO A3)
+        const latamCodes = new Set([
+            "MEX","BRA","ARG","COL","CHL","PER","VEN","ECU","GTM","CUB",
+            "DOM","HND","PRY","SLV","NIC","CRI","PAN","URY","BOL","PRI",
+            "HTI","JAM","TTO","GUY","SUR","BLZ","GUF"
+        ]);
+
+        const codeToName = {
+            "MEX":"Mexico","BRA":"Brazil","ARG":"Argentina","COL":"Colombia",
+            "CHL":"Chile","PER":"Peru","VEN":"Venezuela","ECU":"Ecuador",
+            "GTM":"Guatemala","CUB":"Cuba","DOM":"Dominican Republic",
+            "HND":"Honduras","PRY":"Paraguay","SLV":"El Salvador",
+            "NIC":"Nicaragua","CRI":"Costa Rica","PAN":"Panama",
+            "URY":"Uruguay","BOL":"Bolivia","PRI":"Puerto Rico",
+            "HTI":"Haiti","JAM":"Jamaica","TTO":"Trinidad and Tobago",
+            "GUY":"Guyana","SUR":"Suriname","BLZ":"Belize","GUF":"French Guiana"
+        };
+
+        // Color scale
+        function getColor(count) {
+            if (count >= 1000) return '#67000d';
+            if (count >= 500)  return '#a50f15';
+            if (count >= 300)  return '#cb181d';
+            if (count >= 200)  return '#ef3b2c';
+            if (count >= 100)  return '#fb6a4a';
+            if (count >= 50)   return '#fc9272';
+            if (count >= 20)   return '#fcbba1';
+            if (count >= 1)    return '#fee0d2';
+            return '#f0f0f0';
+        }
+
+        // Init map
+        const map = L.map('map', {
+            center: [5, -70],
+            zoom: 4,
+            minZoom: 3,
+            maxZoom: 8
+        });
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap &copy; CARTO'
+        }).addTo(map);
+
+        let geojsonLayer;
+        let currentEditCountry = null;
+        let countryLayers = {};
+        let labelMarkers = [];
+
+        // Fetch GeoJSON
+        fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
+            .then(r => r.json())
+            .then(data => {
+                // Filter LATAM
+                data.features = data.features.filter(f => {
+                    const code = f.properties.ISO_A3;
+                    return latamCodes.has(code);
+                });
+
+                geojsonLayer = L.geoJSON(data, {
+                    style: featureStyle,
+                    onEachFeature: onEachFeature
+                }).addTo(map);
+
+                addLabels();
+                updateRanking();
+                buildLegend();
+            });
+
+        function featureStyle(feature) {
+            const code = feature.properties.ISO_A3;
+            const name = codeToName[code];
+            const count = youtuberData[name] || 0;
+            return {
+                fillColor: getColor(count),
+                weight: 2,
+                opacity: 1,
+                color: '#666',
+                dashArray: '',
+                fillOpacity: 0.8
+            };
+        }
+
+        function onEachFeature(feature, layer) {
+            const code = feature.properties.ISO_A3;
+            const name = codeToName[code];
+            if (!name) return;
+
+            countryLayers[name] = layer;
+            const displayName = countryNames[name] || name;
+            const count = youtuberData[name] || 0;
+
+            layer.bindTooltip(
+                `<strong>${displayName}</strong><br/>YouTubers: ${count.toLocaleString()}`,
+                { sticky: true, className: 'custom-tooltip' }
+            );
+
+            layer.on({
+                mouseover: function(e) {
+                    e.target.setStyle({ weight: 3, color: '#333', fillOpacity: 0.95 });
+                    e.target.bringToFront();
+                },
+                mouseout: function(e) {
+                    geojsonLayer.resetStyle(e.target);
+                },
+                click: function() {
+                    openModal(name);
+                }
+            });
+        }
+
+        function addLabels() {
+            labelMarkers.forEach(m => map.removeLayer(m));
+            labelMarkers = [];
+            for (const [name, coords] of Object.entries(countryCoords)) {
+                const count = youtuberData[name] || 0;
+                const displayName = countryNames[name] || name;
+                const marker = L.marker(coords, {
+                    icon: L.divIcon({
+                        className: 'country-label',
+                        html: `${count.toLocaleString()}`,
+                        iconSize: [50, 20],
+                        iconAnchor: [25, 10]
+                    }),
+                    interactive: false
+                }).addTo(map);
+                labelMarkers.push(marker);
+            }
+        }
+
+        // Modal
+        function openModal(name) {
+            currentEditCountry = name;
+            const displayName = countryNames[name] || name;
+            document.getElementById('editTitle').textContent = displayName;
+            document.getElementById('editInput').value = youtuberData[name] || 0;
+            document.getElementById('editModal').classList.add('active');
+            document.getElementById('editInput').focus();
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').classList.remove('active');
+            currentEditCountry = null;
+        }
+
+        function saveEdit() {
+            const val = parseInt(document.getElementById('editInput').value) || 0;
+            youtuberData[currentEditCountry] = Math.max(0, val);
+
+            // Update layer style
+            const layer = countryLayers[currentEditCountry];
+            if (layer) {
+                layer.setStyle(featureStyle(layer.feature));
+                const displayName = countryNames[currentEditCountry] || currentEditCountry;
+                layer.setTooltipContent(
+                    `<strong>${displayName}</strong><br/>YouTubers: ${val.toLocaleString()}`
+                );
+            }
+
+            addLabels();
+            updateRanking();
+            closeModal();
+        }
+
+        // Handle enter key in modal
+        document.getElementById('editInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') saveEdit();
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // Ranking panel
+        function updateRanking() {
+            const sorted = Object.entries(youtuberData).sort((a, b) => b[1] - a[1]);
+            const list = document.getElementById('rankingList');
+            let total = 0;
+            list.innerHTML = sorted.map(([name, count]) => {
+                total += count;
+                const displayName = countryNames[name] || name;
+                return `<div class="country-row" onclick="openModal('${name}')" style="cursor:pointer">
+                    <span class="country-name">${displayName}</span>
+                    <span class="country-count">${count.toLocaleString()}</span>
+                </div>`;
+            }).join('');
+            document.getElementById('totalCount').textContent = total.toLocaleString();
+        }
+
+        // Legend
+        function buildLegend() {
+            const grades = [
+                { min: 1000, label: '1000+' },
+                { min: 500, label: '500–999' },
+                { min: 300, label: '300–499' },
+                { min: 200, label: '200–299' },
+                { min: 100, label: '100–199' },
+                { min: 50, label: '50–99' },
+                { min: 20, label: '20–49' },
+                { min: 1, label: '1–19' },
+                { min: 0, label: '0' },
+            ];
+            const legend = document.getElementById('legend');
+            legend.innerHTML = '<h4>YouTubers</h4>' + grades.map(g =>
+                `<div class="legend-item">
+                    <div class="legend-color" style="background:${getColor(g.min)}"></div>
+                    ${g.label}
+                </div>`
+            ).join('');
+        }
+    </script>
+</body>
+</html>
