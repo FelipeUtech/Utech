@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1a1a2e; }
         #map { width: 100%; height: 100vh; }
 
         .info-panel {
@@ -15,39 +15,42 @@
             top: 10px;
             right: 10px;
             z-index: 1000;
-            background: white;
+            background: rgba(255,255,255,0.97);
             padding: 16px;
-            border-radius: 8px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.3);
-            max-width: 320px;
-            max-height: 90vh;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            max-width: 300px;
+            max-height: 85vh;
             overflow-y: auto;
         }
         .info-panel h2 {
-            font-size: 18px;
-            margin-bottom: 12px;
-            color: #333;
-            border-bottom: 2px solid #ff0000;
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #c0392b;
+            border-bottom: 2px solid #c0392b;
             padding-bottom: 6px;
         }
         .country-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 6px 0;
-            border-bottom: 1px solid #eee;
-            font-size: 14px;
+            padding: 5px 4px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 13px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.15s;
         }
-        .country-row:hover { background: #f5f5f5; }
-        .country-name { font-weight: 500; color: #444; }
+        .country-row:hover { background: #fef0ef; }
+        .country-name { font-weight: 500; color: #333; }
         .country-count {
-            background: #ff0000;
+            background: #c0392b;
             color: white;
             padding: 2px 8px;
-            border-radius: 12px;
+            border-radius: 10px;
             font-weight: bold;
-            font-size: 12px;
-            min-width: 40px;
+            font-size: 11px;
+            min-width: 36px;
             text-align: center;
         }
 
@@ -56,20 +59,20 @@
             bottom: 30px;
             left: 10px;
             z-index: 1000;
-            background: white;
-            padding: 12px;
-            border-radius: 8px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+            background: rgba(255,255,255,0.95);
+            padding: 12px 14px;
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.25);
         }
-        .legend h4 { margin-bottom: 8px; font-size: 14px; }
-        .legend-item { display: flex; align-items: center; margin-bottom: 4px; font-size: 12px; }
-        .legend-color { width: 20px; height: 14px; margin-right: 8px; border: 1px solid #999; }
+        .legend h4 { margin-bottom: 8px; font-size: 13px; color: #333; }
+        .legend-item { display: flex; align-items: center; margin-bottom: 3px; font-size: 11px; color: #555; }
+        .legend-color { width: 22px; height: 12px; margin-right: 8px; border-radius: 2px; border: 1px solid rgba(0,0,0,0.15); }
 
         .edit-modal {
             display: none;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.55);
             z-index: 2000;
             justify-content: center;
             align-items: center;
@@ -77,36 +80,38 @@
         .edit-modal.active { display: flex; }
         .edit-content {
             background: white;
-            padding: 24px;
-            border-radius: 12px;
-            min-width: 300px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            padding: 28px;
+            border-radius: 14px;
+            min-width: 320px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.35);
         }
-        .edit-content h3 { margin-bottom: 16px; color: #333; }
-        .edit-content label { display: block; margin-bottom: 4px; font-weight: 500; color: #555; }
+        .edit-content h3 { margin-bottom: 16px; color: #222; font-size: 20px; }
+        .edit-content label { display: block; margin-bottom: 6px; font-weight: 500; color: #555; font-size: 14px; }
         .edit-content input {
             width: 100%;
-            padding: 8px 12px;
+            padding: 10px 14px;
             border: 2px solid #ddd;
-            border-radius: 6px;
-            font-size: 16px;
-            margin-bottom: 16px;
+            border-radius: 8px;
+            font-size: 18px;
+            margin-bottom: 18px;
+            transition: border-color 0.2s;
         }
-        .edit-content input:focus { border-color: #ff0000; outline: none; }
-        .btn-group { display: flex; gap: 8px; }
+        .edit-content input:focus { border-color: #c0392b; outline: none; }
+        .btn-group { display: flex; gap: 10px; }
         .btn {
             flex: 1;
-            padding: 10px;
+            padding: 11px;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 14px;
             font-weight: bold;
             cursor: pointer;
+            transition: all 0.15s;
         }
-        .btn-save { background: #ff0000; color: white; }
-        .btn-save:hover { background: #cc0000; }
-        .btn-cancel { background: #eee; color: #333; }
-        .btn-cancel:hover { background: #ddd; }
+        .btn-save { background: #c0392b; color: white; }
+        .btn-save:hover { background: #a93226; }
+        .btn-cancel { background: #ecf0f1; color: #333; }
+        .btn-cancel:hover { background: #d5dbdb; }
 
         .title-bar {
             position: absolute;
@@ -114,38 +119,66 @@
             left: 50%;
             transform: translateX(-50%);
             z-index: 1000;
-            background: rgba(255,255,255,0.95);
-            padding: 10px 24px;
-            border-radius: 8px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+            background: rgba(255,255,255,0.97);
+            padding: 10px 28px;
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.25);
             text-align: center;
+            white-space: nowrap;
         }
-        .title-bar h1 { font-size: 20px; color: #333; }
-        .title-bar p { font-size: 12px; color: #777; margin-top: 2px; }
+        .title-bar h1 { font-size: 18px; color: #222; }
+        .title-bar p { font-size: 11px; color: #888; margin-top: 2px; }
 
         .country-label {
             background: none !important;
             border: none !important;
             box-shadow: none !important;
             font-weight: bold;
-            font-size: 13px;
-            color: #222;
-            text-shadow: 1px 1px 2px white, -1px -1px 2px white, 1px -1px 2px white, -1px 1px 2px white;
+            font-size: 12px;
+            color: #111;
+            text-shadow: 0 0 4px white, 0 0 4px white, 0 0 4px white;
         }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #1a1a2e;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 18px;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .loading-overlay .spinner {
+            width: 40px; height: 40px;
+            border: 4px solid rgba(255,255,255,0.2);
+            border-top-color: #c0392b;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 14px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        Cargando mapa...
+    </div>
+
     <div id="map"></div>
 
     <div class="title-bar">
         <h1>YouTubers en Latinoamérica</h1>
-        <p>Haz clic en un país para editar el número de YouTubers</p>
+        <p>Clic en un país para editar</p>
     </div>
 
     <div class="info-panel" id="infoPanel">
         <h2>Ranking por País</h2>
         <div id="rankingList"></div>
-        <div style="margin-top: 12px; font-size: 12px; color: #999; text-align: center;">
+        <div style="margin-top: 10px; font-size: 12px; color: #999; text-align: center;">
             Total: <strong id="totalCount">0</strong> YouTubers
         </div>
     </div>
@@ -165,6 +198,7 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/topojson-client@3"></script>
     <script>
         // ====================================================================
         // DATOS DE YOUTUBERS POR PAÍS — MODIFICA AQUÍ LOS VALORES
@@ -180,7 +214,7 @@
             "Ecuador":                120,
             "Guatemala":              85,
             "Cuba":                   40,
-            "Dominican Republic":     75,
+            "Dominican Rep.":         75,
             "Honduras":               55,
             "Paraguay":               45,
             "El Salvador":            50,
@@ -196,11 +230,11 @@
             "Guyana":                 8,
             "Suriname":               5,
             "Belize":                 10,
-            "French Guiana":          3,
+            "Fr. S. Antarctic Lands": 0,
         };
 
-        // Traducción de nombres para mostrar en español
-        const countryNames = {
+        // Nombres en español para mostrar
+        const displayNames = {
             "Mexico": "México",
             "Brazil": "Brasil",
             "Argentina": "Argentina",
@@ -211,7 +245,7 @@
             "Ecuador": "Ecuador",
             "Guatemala": "Guatemala",
             "Cuba": "Cuba",
-            "Dominican Republic": "Rep. Dominicana",
+            "Dominican Rep.": "Rep. Dominicana",
             "Honduras": "Honduras",
             "Paraguay": "Paraguay",
             "El Salvador": "El Salvador",
@@ -227,10 +261,9 @@
             "Guyana": "Guyana",
             "Suriname": "Surinam",
             "Belize": "Belice",
-            "French Guiana": "Guayana Francesa",
         };
 
-        // Coordenadas centro de cada país para labels
+        // Coordenadas centro para labels
         const countryCoords = {
             "Mexico": [23.6, -102.5],
             "Brazil": [-14.2, -51.9],
@@ -242,7 +275,7 @@
             "Ecuador": [-1.8, -78.2],
             "Guatemala": [15.8, -90.2],
             "Cuba": [21.5, -79.0],
-            "Dominican Republic": [18.7, -70.2],
+            "Dominican Rep.": [18.7, -70.2],
             "Honduras": [15.2, -86.2],
             "Paraguay": [-23.4, -58.4],
             "El Salvador": [13.8, -88.9],
@@ -258,28 +291,11 @@
             "Guyana": [4.9, -58.9],
             "Suriname": [3.9, -56.0],
             "Belize": [17.2, -88.5],
-            "French Guiana": [3.9, -53.1],
         };
 
-        // Países LATAM (ISO A3)
-        const latamCodes = new Set([
-            "MEX","BRA","ARG","COL","CHL","PER","VEN","ECU","GTM","CUB",
-            "DOM","HND","PRY","SLV","NIC","CRI","PAN","URY","BOL","PRI",
-            "HTI","JAM","TTO","GUY","SUR","BLZ","GUF"
-        ]);
+        // Países LATAM por nombre (como aparecen en world-atlas 110m)
+        const latamNames = new Set(Object.keys(youtuberData));
 
-        const codeToName = {
-            "MEX":"Mexico","BRA":"Brazil","ARG":"Argentina","COL":"Colombia",
-            "CHL":"Chile","PER":"Peru","VEN":"Venezuela","ECU":"Ecuador",
-            "GTM":"Guatemala","CUB":"Cuba","DOM":"Dominican Republic",
-            "HND":"Honduras","PRY":"Paraguay","SLV":"El Salvador",
-            "NIC":"Nicaragua","CRI":"Costa Rica","PAN":"Panama",
-            "URY":"Uruguay","BOL":"Bolivia","PRI":"Puerto Rico",
-            "HTI":"Haiti","JAM":"Jamaica","TTO":"Trinidad and Tobago",
-            "GUY":"Guyana","SUR":"Suriname","BLZ":"Belize","GUF":"French Guiana"
-        };
-
-        // Color scale
         function getColor(count) {
             if (count >= 1000) return '#67000d';
             if (count >= 500)  return '#a50f15';
@@ -294,10 +310,11 @@
 
         // Init map
         const map = L.map('map', {
-            center: [5, -70],
+            center: [4, -68],
             zoom: 4,
             minZoom: 3,
-            maxZoom: 8
+            maxZoom: 8,
+            zoomControl: true
         });
 
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
@@ -309,57 +326,84 @@
         let countryLayers = {};
         let labelMarkers = [];
 
-        // Fetch GeoJSON
-        fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
+        // Usar world-atlas TopoJSON (110m = ~300KB, mucho más ligero)
+        fetch('https://unpkg.com/world-atlas@2/countries-110m.json')
             .then(r => r.json())
-            .then(data => {
-                // Filter LATAM
-                data.features = data.features.filter(f => {
-                    const code = f.properties.ISO_A3;
-                    return latamCodes.has(code);
-                });
+            .then(topology => {
+                const geojson = topojson.feature(topology, topology.objects.countries);
 
-                geojsonLayer = L.geoJSON(data, {
-                    style: featureStyle,
-                    onEachFeature: onEachFeature
-                }).addTo(map);
+                // Necesitamos mapear IDs numéricos a nombres
+                // Cargar nombres desde el mismo paquete
+                return fetch('https://unpkg.com/world-atlas@2/countries-110m.json')
+                    .then(() => {
+                        // Los IDs en world-atlas son numéricos (ISO 3166-1 numeric)
+                        // Mapeamos los que necesitamos
+                        const idToName = {
+                            32: "Argentina", 68: "Bolivia", 76: "Brazil", 152: "Chile",
+                            170: "Colombia", 188: "Costa Rica", 192: "Cuba", 214: "Dominican Rep.",
+                            218: "Ecuador", 222: "El Salvador", 320: "Guatemala", 328: "Guyana",
+                            332: "Haiti", 340: "Honduras", 388: "Jamaica", 484: "Mexico",
+                            558: "Nicaragua", 591: "Panama", 600: "Paraguay", 604: "Peru",
+                            630: "Puerto Rico", 740: "Suriname", 780: "Trinidad and Tobago",
+                            858: "Uruguay", 862: "Venezuela", 84: "Belize"
+                        };
 
-                addLabels();
-                updateRanking();
-                buildLegend();
+                        const filteredFeatures = geojson.features.filter(f => {
+                            const id = parseInt(f.id);
+                            return idToName[id] !== undefined;
+                        });
+
+                        filteredFeatures.forEach(f => {
+                            f.properties.name = idToName[parseInt(f.id)];
+                        });
+
+                        geojsonLayer = L.geoJSON({ type: "FeatureCollection", features: filteredFeatures }, {
+                            style: featureStyle,
+                            onEachFeature: onEachFeature
+                        }).addTo(map);
+
+                        addLabels();
+                        updateRanking();
+                        buildLegend();
+
+                        // Ocultar loading
+                        document.getElementById('loadingOverlay').style.display = 'none';
+                    });
+            })
+            .catch(err => {
+                console.error('Error cargando mapa:', err);
+                document.getElementById('loadingOverlay').innerHTML =
+                    '<div style="text-align:center;color:white">Error cargando el mapa.<br>Verifica tu conexión a internet.</div>';
             });
 
         function featureStyle(feature) {
-            const code = feature.properties.ISO_A3;
-            const name = codeToName[code];
+            const name = feature.properties.name;
             const count = youtuberData[name] || 0;
             return {
                 fillColor: getColor(count),
-                weight: 2,
+                weight: 1.5,
                 opacity: 1,
-                color: '#666',
-                dashArray: '',
-                fillOpacity: 0.8
+                color: '#555',
+                fillOpacity: 0.85
             };
         }
 
         function onEachFeature(feature, layer) {
-            const code = feature.properties.ISO_A3;
-            const name = codeToName[code];
+            const name = feature.properties.name;
             if (!name) return;
 
             countryLayers[name] = layer;
-            const displayName = countryNames[name] || name;
+            const label = displayNames[name] || name;
             const count = youtuberData[name] || 0;
 
             layer.bindTooltip(
-                `<strong>${displayName}</strong><br/>YouTubers: ${count.toLocaleString()}`,
-                { sticky: true, className: 'custom-tooltip' }
+                `<strong>${label}</strong><br/>YouTubers: <strong>${count.toLocaleString()}</strong>`,
+                { sticky: true, direction: 'top', offset: [0, -10] }
             );
 
             layer.on({
                 mouseover: function(e) {
-                    e.target.setStyle({ weight: 3, color: '#333', fillOpacity: 0.95 });
+                    e.target.setStyle({ weight: 3, color: '#222', fillOpacity: 0.95 });
                     e.target.bringToFront();
                 },
                 mouseout: function(e) {
@@ -376,13 +420,12 @@
             labelMarkers = [];
             for (const [name, coords] of Object.entries(countryCoords)) {
                 const count = youtuberData[name] || 0;
-                const displayName = countryNames[name] || name;
                 const marker = L.marker(coords, {
                     icon: L.divIcon({
                         className: 'country-label',
-                        html: `${count.toLocaleString()}`,
-                        iconSize: [50, 20],
-                        iconAnchor: [25, 10]
+                        html: count.toLocaleString(),
+                        iconSize: [50, 18],
+                        iconAnchor: [25, 9]
                     }),
                     interactive: false
                 }).addTo(map);
@@ -390,14 +433,14 @@
             }
         }
 
-        // Modal
         function openModal(name) {
             currentEditCountry = name;
-            const displayName = countryNames[name] || name;
-            document.getElementById('editTitle').textContent = displayName;
+            const label = displayNames[name] || name;
+            document.getElementById('editTitle').textContent = label;
             document.getElementById('editInput').value = youtuberData[name] || 0;
             document.getElementById('editModal').classList.add('active');
             document.getElementById('editInput').focus();
+            document.getElementById('editInput').select();
         }
 
         function closeModal() {
@@ -409,13 +452,12 @@
             const val = parseInt(document.getElementById('editInput').value) || 0;
             youtuberData[currentEditCountry] = Math.max(0, val);
 
-            // Update layer style
             const layer = countryLayers[currentEditCountry];
             if (layer) {
                 layer.setStyle(featureStyle(layer.feature));
-                const displayName = countryNames[currentEditCountry] || currentEditCountry;
+                const label = displayNames[currentEditCountry] || currentEditCountry;
                 layer.setTooltipContent(
-                    `<strong>${displayName}</strong><br/>YouTubers: ${val.toLocaleString()}`
+                    `<strong>${label}</strong><br/>YouTubers: <strong>${val.toLocaleString()}</strong>`
                 );
             }
 
@@ -424,43 +466,45 @@
             closeModal();
         }
 
-        // Handle enter key in modal
         document.getElementById('editInput').addEventListener('keydown', function(e) {
             if (e.key === 'Enter') saveEdit();
             if (e.key === 'Escape') closeModal();
         });
 
-        // Ranking panel
+        // Cerrar modal al clic fuera
+        document.getElementById('editModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
         function updateRanking() {
-            const sorted = Object.entries(youtuberData).sort((a, b) => b[1] - a[1]);
+            const entries = Object.entries(youtuberData).filter(([k]) => displayNames[k]);
+            const sorted = entries.sort((a, b) => b[1] - a[1]);
             const list = document.getElementById('rankingList');
             let total = 0;
             list.innerHTML = sorted.map(([name, count]) => {
                 total += count;
-                const displayName = countryNames[name] || name;
-                return `<div class="country-row" onclick="openModal('${name}')" style="cursor:pointer">
-                    <span class="country-name">${displayName}</span>
+                const label = displayNames[name] || name;
+                return `<div class="country-row" onclick="openModal('${name}')">
+                    <span class="country-name">${label}</span>
                     <span class="country-count">${count.toLocaleString()}</span>
                 </div>`;
             }).join('');
             document.getElementById('totalCount').textContent = total.toLocaleString();
         }
 
-        // Legend
         function buildLegend() {
             const grades = [
-                { min: 1000, label: '1000+' },
-                { min: 500, label: '500–999' },
-                { min: 300, label: '300–499' },
-                { min: 200, label: '200–299' },
-                { min: 100, label: '100–199' },
-                { min: 50, label: '50–99' },
-                { min: 20, label: '20–49' },
-                { min: 1, label: '1–19' },
+                { min: 1000, label: '1,000+' },
+                { min: 500, label: '500 – 999' },
+                { min: 300, label: '300 – 499' },
+                { min: 200, label: '200 – 299' },
+                { min: 100, label: '100 – 199' },
+                { min: 50, label: '50 – 99' },
+                { min: 20, label: '20 – 49' },
+                { min: 1, label: '1 – 19' },
                 { min: 0, label: '0' },
             ];
-            const legend = document.getElementById('legend');
-            legend.innerHTML = '<h4>YouTubers</h4>' + grades.map(g =>
+            document.getElementById('legend').innerHTML = '<h4>YouTubers</h4>' + grades.map(g =>
                 `<div class="legend-item">
                     <div class="legend-color" style="background:${getColor(g.min)}"></div>
                     ${g.label}
