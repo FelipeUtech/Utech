@@ -163,7 +163,15 @@ parar si no mejora en 3 iteraciones · checkpoint del mejor intento cada vuelta.
 | e_domain_no_popcorn | ✅ PASS | particulas fuera de dominio=0; vmax_global=0.634 v_fisica~14.01 popcorn=False |
 | f_runout_converge | ✅ PASS | runout_final=0.107 m, variacion_ultimos_frames=0.0075 m (rel=0.070, tol 0.05); converge=True |
 
-**Gate(s) sin pasar:** c_kinetic_energy.
+**Gate(s) sin pasar:** c_kinetic_energy (final/pico = 0.184 vs umbral 0.15).
+
+**Evidencia del techo del régimen ED2Q4:** se barrió el amortiguamiento y la
+duración (damping 0.10→0.24, 12 000→19 000 pasos, ppc 2 y 3). El gate c
+**asíntota en ~0.17–0.18** (la masa está esencialmente en reposo: |v|max≈0.6 m/s,
+runout convergente) sin cruzar 0.15; alargar más la corrida **degrada el gate f**
+(el slump sigue creciendo lentamente) o reintroduce ruido de cell-crossing. Es
+decir, la quiescencia total de la KE en este caso **requiere** el mapeo
+GIMP/CPDI (abajo), no más tiempo/amortiguamiento.
 
 **Diagnóstico y ajuste manual recomendado (gate c — quiescencia total de la energía cinética):** el frente de runout converge (gate f) y la masa forma una banda de corte localizada (gate d) con velocidades físicas (gate e), pero el bloque deslizado sigue reacomodándose internamente al final de la ventana. Con el mapeo estándar ED2Q4, alargar la corrida introduce ruido de cell-crossing (popcorn) antes de que la KE decaiga del todo. **Ajuste recomendado:** (1) usar mapeo **GIMP/CPDI** (en este build, `ED2Q16G` requiere soporte de nodos vecinos en la frontera —corregir el manejo de celdas de borde— o compilar CPDI) para sostener la gran deformación sin ruido y dejar que la KE decaiga a ~0; (2) alternativamente, amortiguamiento Cundall ~0.25–0.30 con `ppc=3` y `dt` menor para quiescencia dentro de la ventana limpia. Para el NF real, además, habilitar el bifásico con estado inicial geostático+hidrostático equilibrado (§4.1).
 
