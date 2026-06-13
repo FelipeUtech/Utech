@@ -1,0 +1,44 @@
+{
+  "results_dir": "/home/user/Utech/agente-mpm/checkpoints/best_clean/results",
+  "n_frames": 100,
+  "gates": {
+    "a_no_nan": {
+      "pass": true,
+      "detail": "NaN detectado=False"
+    },
+    "b_mass": {
+      "pass": true,
+      "detail": "desviacion relativa masa=0.00e+00 (tol 0.02)",
+      "value": 0.0
+    },
+    "c_kinetic_energy": {
+      "pass": false,
+      "detail": "KE0=1.513e+00 peak=1.272e+03@4 final=2.344e+02 (final/peak=0.184); rose=True decayed=False not_diverge=True",
+      "ke_peak": 1272.2624603245297,
+      "ke_final": 234.37665644404922,
+      "ipeak": 4
+    },
+    "d_shear_band": {
+      "pass": true,
+      "detail": "pdstrain_max=9.498e-01 frac_en_banda=0.266 gini=0.655; localizada=True (no difusa ni cuerpo rigido)",
+      "pd_max": 0.9497704775660345,
+      "frac_band": 0.2656751239428405,
+      "gini": 0.6547021311212871
+    },
+    "e_domain_no_popcorn": {
+      "pass": true,
+      "detail": "particulas fuera de dominio=0; vmax_global=0.634 v_fisica~14.01 popcorn=False",
+      "popcorn": false,
+      "in_domain": true
+    },
+    "f_runout_converge": {
+      "pass": true,
+      "detail": "runout_final=0.107 m, variacion_ultimos_frames=0.0075 m (rel=0.070, tol 0.05); converge=True",
+      "runout": 0.10680472636287774,
+      "span": 0.007528744724968561
+    }
+  },
+  "passed": false,
+  "score": 5,
+  "score_max": 6
+}

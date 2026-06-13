@@ -77,13 +77,13 @@
   "analysis": {
     "type": "MPMExplicit2D",
     "stress_update": "usf",
-    "dt": 0.00028,
+    "dt": 0.00035,
     "uuid": "seccionA",
-    "nsteps": 23520,
+    "nsteps": 15000,
     "velocity_update": true,
     "damping": {
       "type": "Cundall",
-      "damping_factor": 0.24000000000000002
+      "damping_factor": 0.18
     },
     "resume": {
       "resume": false,
@@ -93,6 +93,6 @@
   },
   "post_processing": {
     "path": "results/",
-    "output_steps": 235
+    "output_steps": 150
   }
 }
