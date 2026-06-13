@@ -53,14 +53,14 @@
       "density": 1100.0,
       "youngs_modulus": 5000000.0,
       "poisson_ratio": 0.33,
-      "friction": 23.0,
+      "friction": 22.0,
       "dilation": 0.0,
       "cohesion": 3000.0,
-      "residual_friction": 10.0,
+      "residual_friction": 18.0,
       "residual_dilation": 0.0,
-      "residual_cohesion": 0.0,
-      "peak_pdstrain": 0.005,
-      "residual_pdstrain": 0.04,
+      "residual_cohesion": 1500.0,
+      "peak_pdstrain": 0.01,
+      "residual_pdstrain": 0.1,
       "tension_cutoff": 1000.0,
       "softening": true,
       "porosity": 0.4,
@@ -79,11 +79,11 @@
     "stress_update": "usf",
     "dt": 0.0004,
     "uuid": "seccionA",
-    "nsteps": 21558,
+    "nsteps": 12000,
     "velocity_update": true,
     "damping": {
       "type": "Cundall",
-      "damping_factor": 0.2
+      "damping_factor": 0.1
     },
     "resume": {
       "resume": false,
@@ -93,6 +93,6 @@
   },
   "post_processing": {
     "path": "results/",
-    "output_steps": 215
+    "output_steps": 120
   }
 }

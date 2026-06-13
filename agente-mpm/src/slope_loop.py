@@ -52,7 +52,9 @@ STOP_HOUR_UTC = 6          # detener nuevas corridas a las 06:00 UTC
 NO_PROGRESS_LIMIT = 3
 
 # ---- Geometria parametrica de la Seccion A (stand-in del DXF) ----
-GEOM = dict(crest_h=5.0, slope_angle_deg=42.0, crest_len=4.0,
+# Talud decididamente inestable (cara empinada) para una falla NÍTIDA y finita
+# (slump) que se arresta sobre la berma plana de fundacion.
+GEOM = dict(crest_h=6.0, slope_angle_deg=55.0, crest_len=4.0,
             toe_x=5.0, foundation_h=2.0)
 H_CELL = 0.25
 RUNOUT_EXT = 10.0   # extension horizontal extra del dominio para runout
@@ -82,15 +84,17 @@ def base_params():
         peak->residual) una vez iniciada la fluencia.
     """
     return dict(
-        dt=4.0e-4, nsteps=11000, output_steps=110,
+        dt=4.0e-4, nsteps=12000, output_steps=120,
         damping=0.10, ppc=2,
-        # solido Mohr-Coulomb (tension efectiva) con ablandamiento
+        # solido Mohr-Coulomb (tension efectiva) con ablandamiento MODERADO:
+        # pico bajo => falla bajo gravedad; residual moderado => el slump se
+        # ARRESTA tras deslizar (no flujo cohesionless con ruido de cell-crossing).
         density=1100.0, E=5.0e6, nu=0.33,
-        friction_peak=23.0, friction_res=10.0,
-        cohesion_peak=3000.0, cohesion_res=0.0,
+        friction_peak=22.0, friction_res=18.0,
+        cohesion_peak=3000.0, cohesion_res=1500.0,
         tension_cutoff=1000.0,
         dilation=0.0,
-        peak_pdstrain=0.005, residual_pdstrain=0.04,
+        peak_pdstrain=0.01, residual_pdstrain=0.10,
         # (parametros bifasicos retenidos para reactivar TWOPHASE)
         porosity=0.40, k=1.0e-4,
         liq_density=1000.0, liq_bulk=2.0e6, liq_visc=1.0e-3,

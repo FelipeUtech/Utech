@@ -155,10 +155,11 @@ def evaluate(results_dir, domain=None, toe=None, mass_tol=0.01,
         dom_detail = f"particulas fuera de dominio={out}"
     # popcorn: pico de velocidad muy por encima de la mediana en cualquier frame
     ratio = vmax / (vmed + 1e-12)
-    # umbral fisico de velocidad ~ sqrt(2 g H)
+    # umbral fisico de velocidad ~ sqrt(2 g H); el ruido de cell-crossing
+    # (popcorn) produce velocidades muy por encima de lo fisico
     H = (domain[3] - domain[1]) if domain is not None else (np.max(xmax) - np.min(xmax))
     v_phys = np.sqrt(2 * G * max(H, 1.0))
-    popcorn = bool(np.any(vmax > 5.0 * v_phys))
+    popcorn = bool(np.any(vmax > 1.5 * v_phys))
     report["gates"]["e_domain_no_popcorn"] = {
         "pass": bool(in_domain and not popcorn),
         "detail": (f"{dom_detail}; vmax_global={float(np.max(vmax)):.3f} "
