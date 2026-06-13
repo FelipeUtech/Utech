@@ -1,0 +1,7 @@
+# Resultados crudos y temporales (grandes) — no versionar
+**/results/
+checkpoints/
+_frames/
+**/_frames/
+*.h5
+# binarios MPM (se compilan aparte)

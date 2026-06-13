@@ -1,0 +1,94 @@
+{
+  "title": "Columna granular seca (calibracion)",
+  "mesh": {
+    "mesh": "mesh.txt",
+    "entity_sets": "entity_sets.json",
+    "cell_type": "ED2Q4",
+    "isoparametric": false,
+    "io_type": "Ascii2D",
+    "node_type": "N2D",
+    "boundary_conditions": {
+      "velocity_constraints": [
+        {
+          "nset_id": 0,
+          "dir": 0,
+          "velocity": 0.0
+        },
+        {
+          "nset_id": 0,
+          "dir": 1,
+          "velocity": 0.0
+        },
+        {
+          "nset_id": 1,
+          "dir": 0,
+          "velocity": 0.0
+        },
+        {
+          "nset_id": 2,
+          "dir": 0,
+          "velocity": 0.0
+        }
+      ]
+    }
+  },
+  "particles": [
+    {
+      "generator": {
+        "check_duplicates": true,
+        "location": "particles.txt",
+        "io_type": "Ascii2D",
+        "pset_id": 0,
+        "particle_type": "P2D",
+        "material_id": 0,
+        "type": "file"
+      }
+    }
+  ],
+  "materials": [
+    {
+      "id": 0,
+      "type": "MohrCoulomb2D",
+      "density": 1800.0,
+      "youngs_modulus": 1000000.0,
+      "poisson_ratio": 0.3,
+      "friction": 30.0,
+      "dilation": 0.0,
+      "cohesion": 100.0,
+      "residual_friction": 30.0,
+      "residual_dilation": 0.0,
+      "residual_cohesion": 100.0,
+      "peak_pdstrain": 0.0,
+      "residual_pdstrain": 0.0,
+      "tension_cutoff": 50.0,
+      "softening": false
+    }
+  ],
+  "external_loading_conditions": {
+    "gravity": [
+      0.0,
+      -9.81
+    ]
+  },
+  "analysis": {
+    "type": "MPMExplicit2D",
+    "stress_update": "usf",
+    "dt": 0.0001,
+    "uuid": "column_collapse",
+    "nsteps": 18000,
+    "velocity_update": true,
+    "damping": {
+      "type": "Cundall",
+      "damping_factor": 0.1
+    },
+    "resume": {
+      "resume": false,
+      "uuid": "column_collapse",
+      "step": 0
+    }
+  },
+  "post_processing": {
+    "path": "results/",
+    "output_steps": 180
+  }
+}
