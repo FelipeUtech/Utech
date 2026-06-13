@@ -61,7 +61,7 @@ def build(case_dir, cfg):
     mesh_block = {
         "mesh": "mesh.txt",
         "entity_sets": "entity_sets.json",
-        "cell_type": "ED2Q4",
+        "cell_type": cfg.get("cell_type", "ED2Q4"),
         "isoparametric": False,
         "io_type": "Ascii2D",
         "node_type": "N2D",
