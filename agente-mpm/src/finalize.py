@@ -48,11 +48,58 @@ def make_video(best, ck):
     return name, passed
 
 
+def write_results_section(best, video_name):
+    hist_path = os.path.join(REPORTS, "loop_history.json")
+    hist = json.load(open(hist_path)) if os.path.exists(hist_path) else []
+    rep = best.get("rep", {})
+    gates = rep.get("gates", {})
+    passed = rep.get("passed", False)
+    lines = []
+    verdict = ("**ROMPIMIENTO PERFECTO — los 6 gates pasan.**" if passed
+               else f"**Mejor intento: {best.get('score')}/6 gates** "
+                    f"(iteración {best.get('iter')}).")
+    lines.append(verdict + "\n")
+    lines.append(f"- Iteraciones ejecutadas: **{len(hist)}**")
+    lines.append(f"- Video: `reports/{video_name}`\n")
+    if gates:
+        lines.append("| Gate | Estado | Detalle |")
+        lines.append("|------|--------|---------|")
+        for k, g in gates.items():
+            st = "✅ PASS" if g.get("pass") else "❌ FAIL"
+            det = str(g.get("detail", "")).replace("|", "\\|")[:140]
+            lines.append(f"| {k} | {st} | {det} |")
+        lines.append("")
+    if not passed:
+        fails = [k for k, g in gates.items() if not g.get("pass")]
+        lines.append(f"**Gate(s) sin pasar:** {', '.join(fails)}.")
+        lines.append("**Ajuste manual recomendado:** aumentar amortiguamiento "
+                     "Cundall y/o pasos de tiempo para que la masa depositada "
+                     "alcance el reposo (KE→0, runout estable); de persistir, "
+                     "afinar el ablandamiento (`residual_pdstrain`) para nitidez "
+                     "de la banda. Para NF real, ver §4.1 (estado bifásico "
+                     "equilibrado).\n")
+    # trayectoria de scores
+    if hist:
+        traj = " → ".join(str(h.get("score", "x")) for h in hist)
+        lines.append(f"**Trayectoria de score por iteración:** {traj}\n")
+        lines.append("**Bitácora de ajustes:**")
+        for h in hist:
+            if h.get("ajuste"):
+                lines.append(f"- iter {h['iter']} (score {h.get('score')}): {h['ajuste']}")
+    section = "\n".join(lines)
+    rp = os.path.join(ROOT, "REPORTE.md")
+    txt = open(rp).read()
+    txt = txt.replace("<!-- RESULTS_PLACEHOLDER -->", section)
+    open(rp, "w").write(txt)
+    print("REPORTE.md actualizado")
+
+
 if __name__ == "__main__":
     best, ck = best_checkpoint()
     print("best score", best.get("score"), "ckpt", ck)
     if ck:
         name, passed = make_video(best, ck)
+        write_results_section(best, name)
         print("video:", name, "passed:", passed)
     else:
         print("sin checkpoint para video")
