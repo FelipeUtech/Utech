@@ -79,11 +79,11 @@
     "stress_update": "usf",
     "dt": 0.0004,
     "uuid": "seccionA",
-    "nsteps": 12000,
+    "nsteps": 16800,
     "velocity_update": true,
     "damping": {
       "type": "Cundall",
-      "damping_factor": 0.1
+      "damping_factor": 0.15000000000000002
     },
     "resume": {
       "resume": false,
@@ -93,6 +93,6 @@
   },
   "post_processing": {
     "path": "results/",
-    "output_steps": 120
+    "output_steps": 168
   }
 }
