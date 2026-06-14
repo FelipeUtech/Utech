@@ -15,9 +15,14 @@ set -euo pipefail
 BUCKET="polla-mundial-2026-utech"     # <-- cámbialo si está tomado (debe ser único globalmente)
 REGION="us-east-1"                     # <-- región AWS (ej: us-east-1, sa-east-1, us-east-2)
 SRC="polla_mundial_2026.html"          # archivo fuente en este repo
+PROFILE=""                             # opcional: perfil AWS (la misma cuenta del HTML de aportes).
+                                       #           Déjalo vacío para usar el perfil/credenciales por defecto.
 # ==========================================================
 
 KEY="index.html"   # nombre con el que se publica (link limpio)
+
+# Si especificaste un perfil con nombre, todas las llamadas a la AWS CLI lo usarán.
+[ -n "$PROFILE" ] && export AWS_PROFILE="$PROFILE"
 
 command -v aws >/dev/null 2>&1 || { echo "ERROR: no se encontró la AWS CLI. Instálala: https://aws.amazon.com/cli/"; exit 1; }
 [ -f "$SRC" ] || { echo "ERROR: no existe $SRC en el directorio actual."; exit 1; }
