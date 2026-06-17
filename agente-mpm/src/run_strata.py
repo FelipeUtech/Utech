@@ -70,11 +70,17 @@ def material(hid, srf):
     # reduccion de resistencia (SRM): c y tan(phi) divididos por srf
     def red(c, phi): return c / srf, math.degrees(math.atan(math.tan(math.radians(phi)) / srf))
     c_pk, phi_pk = red(c_p, phi_p)
-    c_rs, phi_rs = red(c_p * h["r"], math.degrees(math.atan(math.tan(math.radians(phi_p)) * h["r"])))
+    if FLOW:
+        # escenario DESLIZAMIENTO-FLUJO (NF critico): residual casi nulo => corre
+        c_rs, phi_rs = 0.0, FLOW_PHI_RES
+        pk_pd, rs_pd = 0.002, 0.02   # ablandamiento abrupto => moviliza rapido
+    else:
+        c_rs, phi_rs = red(c_p * h["r"], math.degrees(math.atan(math.tan(math.radians(phi_p)) * h["r"])))
+        pk_pd, rs_pd = 0.01, 0.08
     return dict(id=hid, type="MohrCoulomb2D", density=rho, youngs_modulus=h["E"],
                 poisson_ratio=h["nu"], friction=phi_pk, dilation=h["psi"], cohesion=c_pk,
                 residual_friction=phi_rs, residual_dilation=h["psi"] * h["r"],
-                residual_cohesion=c_rs, peak_pdstrain=0.01, residual_pdstrain=0.08,
+                residual_cohesion=c_rs, peak_pdstrain=pk_pd, residual_pdstrain=rs_pd,
                 tension_cutoff=max(1e3, c_pk * 0.5), softening=True)
 
 
@@ -126,7 +132,7 @@ def build(case, poly, Lx, Ly, nf_y, classify, srf):
          "external_loading_conditions": {"gravity": [0.0, -9.81]},
          "analysis": {"type": "MPMExplicit2D", "stress_update": "usf", "dt": DT,
                       "uuid": "strata", "nsteps": NSTEPS, "velocity_update": True,
-                      "damping": {"type": "Cundall", "damping_factor": 0.05},
+                      "damping": {"type": "Cundall", "damping_factor": DAMP},
                       "resume": {"resume": False, "uuid": "strata", "step": 0}},
          "post_processing": {"path": "results/", "output_steps": max(1, NSTEPS // 100)}}
     json.dump(j, open(os.path.join(case, "mpm.json"), "w"), indent=2)
@@ -134,9 +140,12 @@ def build(case, poly, Lx, Ly, nf_y, classify, srf):
 
 
 DT = 1.0e-3; NSTEPS = 10000
+FLOW = False; FLOW_PHI_RES = 2.0; DAMP = 0.05
 if __name__ == "__main__":
     srf = float(sys.argv[1]) if len(sys.argv) > 1 else 1.6
     if len(sys.argv) > 2: NSTEPS = int(sys.argv[2])
+    if len(sys.argv) > 3 and sys.argv[3] == "flow":
+        FLOW = True; DAMP = 0.02
     poly, Lx, Ly, nf_y, classify = geometry()
     nn, nc, npart, mat = build(CASE, poly, Lx, Ly, nf_y, classify, srf)
     names = ["VI", "V", "IV", "I"]
