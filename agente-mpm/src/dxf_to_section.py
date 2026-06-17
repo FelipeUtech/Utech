@@ -87,12 +87,15 @@ def _normalize(pts, runout_pad, margin):
 
 
 def section_polygon_from_dxf(path, profile_layer=None, nf_layer=None,
-                             base_margin=2.0, side_margin=2.0, runout_pad=12.0):
+                             base_margin=2.0, side_margin=2.0, runout_pad=12.0,
+                             downstream_apron=0.0):
     """Construye el polígono cerrado del cuerpo de suelo a partir del perfil.
 
     profile_layer : capa de la superficie del talud (si None, usa la polilínea
                     más larga — heurística robusta para un perfil de sección).
     nf_layer      : capa del nivel freático (opcional).
+    downstream_apron : longitud (m) de berma/valle plano AGUAS ABAJO a la cota
+                    del pie, para que el suelo fallado pueda fluir y depositarse.
     Devuelve (poly[CCW], nf_y|None, meta).
     """
     polys = extract_polylines(path)
@@ -115,7 +118,13 @@ def section_polygon_from_dxf(path, profile_layer=None, nf_layer=None,
     base0 = 0.0
     # cuerpo de suelo: superficie (izq->der) + baja a base + recorre base a izq
     poly = [(float(x), float(y)) for x, y in S]
-    poly.append((float(S[-1, 0]), base0))   # esquina inferior derecha (pie)
+    toe_x, toe_y = float(S[-1, 0]), float(S[-1, 1])  # pie (punto mas a la derecha)
+    if downstream_apron > 0:
+        # berma/valle plano aguas abajo a la cota del pie (superficie de flujo)
+        poly.append((toe_x + downstream_apron, toe_y))
+        poly.append((toe_x + downstream_apron, base0))
+    else:
+        poly.append((toe_x, base0))
     poly.append((float(S[0, 0]), base0))     # esquina inferior izquierda
     # nivel freático
     nf_y = None
