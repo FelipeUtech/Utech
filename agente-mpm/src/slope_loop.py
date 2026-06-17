@@ -98,9 +98,10 @@ def base_params():
         peak->residual) una vez iniciada la fluencia.
     """
     return dict(
-        # escala real (~54 m): E mayor, dt mayor por celdas grandes (h=2 m)
-        dt=1.5e-3, nsteps=9000, output_steps=90,
-        damping=0.10, ppc=2,
+        # escala real (~54 m): E mayor; ppc=3 + dt menor controlan el
+        # cell-crossing (popcorn) que ejecta particulas en la banda de corte.
+        dt=1.0e-3, nsteps=12000, output_steps=120,
+        damping=0.12, ppc=3,
         # solido Mohr-Coulomb (tension efectiva) con ablandamiento MODERADO:
         # pico => falla bajo NF alto; residual moderado => el slump se ARRESTA.
         density=1200.0, E=5.0e7, nu=0.30,
