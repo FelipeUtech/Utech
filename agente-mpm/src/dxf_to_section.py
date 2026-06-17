@@ -88,7 +88,7 @@ def _normalize(pts, runout_pad, margin):
 
 def section_polygon_from_dxf(path, profile_layer=None, nf_layer=None,
                              base_margin=2.0, side_margin=2.0, runout_pad=12.0,
-                             downstream_apron=0.0):
+                             downstream_apron=0.0, upstream_apron=0.0):
     """Construye el polígono cerrado del cuerpo de suelo a partir del perfil.
 
     profile_layer : capa de la superficie del talud (si None, usa la polilínea
@@ -117,7 +117,11 @@ def section_polygon_from_dxf(path, profile_layer=None, nf_layer=None,
     S[:, 1] -= y_shift
     base0 = 0.0
     # cuerpo de suelo: superficie (izq->der) + baja a base + recorre base a izq
-    poly = [(float(x), float(y)) for x, y in S]
+    crest_x, crest_y = float(S[0, 0]), float(S[0, 1])  # cresta (mas a la izquierda)
+    poly = []
+    if upstream_apron > 0:  # meseta plana de cresta hacia atras (evita escarpe en el borde)
+        poly.append((crest_x - upstream_apron, crest_y))
+    poly += [(float(x), float(y)) for x, y in S]
     toe_x, toe_y = float(S[-1, 0]), float(S[-1, 1])  # pie (punto mas a la derecha)
     if downstream_apron > 0:
         # berma/valle plano aguas abajo a la cota del pie (superficie de flujo)
@@ -125,7 +129,10 @@ def section_polygon_from_dxf(path, profile_layer=None, nf_layer=None,
         poly.append((toe_x + downstream_apron, base0))
     else:
         poly.append((toe_x, base0))
-    poly.append((float(S[0, 0]), base0))     # esquina inferior izquierda
+    left_x = crest_x - upstream_apron if upstream_apron > 0 else crest_x
+    poly.append((left_x, base0))             # esquina inferior izquierda
+    if upstream_apron > 0:  # correr todo a la derecha para que x_min = side_margin
+        poly = [(x + upstream_apron, y) for x, y in poly]
     # nivel freático
     nf_y = None
     if nf_layer:

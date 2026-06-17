@@ -16,7 +16,8 @@ DXF = "/home/user/Utech/#seccion_A-A.dxf"
 MPM = "/home/user/mpm-build/build/mpm"
 ROOT = os.path.abspath(os.path.join(HERE, ".."))
 CASE = os.path.join(ROOT, "cases", "seccionA_strata")
-H = 1.5; PPC = 2; APRON = 8.0; SIDE = 2.0; BASEM = 3.0  # malla fina => banda localizada
+H = 1.5; PPC = 2; APRON = 10.0; SIDE = 2.0; BASEM = 3.0  # malla fina => banda localizada
+UPSTREAM = 25.0   # meseta de cresta hacia atras (escarpe de cabecera lejos del borde)
 GW = 9.81  # kN/m3 agua
 
 # --- Parametros por horizonte (tabla Dearman del usuario) ---
@@ -33,14 +34,15 @@ HOR = {  # id: nombre, gamma_sat, c'kPa, phi', psi, E_MPa, nu, ratio_res
 def geometry():
     poly, nf_y, meta = D.section_polygon_from_dxf(
         DXF, profile_layer="TERRENO", nf_layer="NAF_CRITICO",
-        base_margin=BASEM, side_margin=SIDE, runout_pad=0.0, downstream_apron=APRON)
+        base_margin=BASEM, side_margin=SIDE, runout_pad=0.0,
+        downstream_apron=APRON, upstream_apron=UPSTREAM)
     Lx = max(p[0] for p in poly) + 5.0
     Ly = max(p[1] for p in poly) + 4.0
-    # transform para clasificar contactos (sin espejo en estos datos)
+    # transform para clasificar contactos (mismo shift que el poligono, +UPSTREAM)
     polys = D.extract_polylines(DXF)
     ter = max([p for p in polys if p["layer"] == "TERRENO"], key=lambda d: d["length"])
     T = np.array(ter["pts"]); T = T[np.argsort(T[:, 0])]
-    xoff = SIDE - T[:, 0].min(); yshift = T[:, 1].min() - BASEM
+    xoff = SIDE + UPSTREAM - T[:, 0].min(); yshift = T[:, 1].min() - BASEM
     def tx(pp):
         a = np.array(pp, float); a[:, 0] += xoff; a[:, 1] -= yshift
         return a[np.argsort(a[:, 0])]
@@ -139,8 +141,8 @@ def build(case, poly, Lx, Ly, nf_y, classify, srf):
     return len(nodes), len(cells), len(pts), mat
 
 
-DT = 8.0e-4; NSTEPS = 10000
-FLOW = False; FLOW_PHI_RES = 2.0; DAMP = 0.05
+DT = 6.0e-4; NSTEPS = 10000
+FLOW = False; FLOW_PHI_RES = 2.0; DAMP = 0.10
 if __name__ == "__main__":
     srf = float(sys.argv[1]) if len(sys.argv) > 1 else 1.6
     if len(sys.argv) > 2: NSTEPS = int(sys.argv[2])
