@@ -16,7 +16,7 @@ DXF = "/home/user/Utech/#seccion_A-A.dxf"
 MPM = "/home/user/mpm-build/build/mpm"
 ROOT = os.path.abspath(os.path.join(HERE, ".."))
 CASE = os.path.join(ROOT, "cases", "seccionA_strata")
-H = 2.0; PPC = 2; APRON = 80.0; SIDE = 2.0; BASEM = 3.0  # runout: berma amplia aguas abajo
+H = 2.5; PPC = 2; APRON = 180.0; SIDE = 2.0; BASEM = 3.0  # runout: berma MUY amplia aguas abajo
 UPSTREAM = 0.0
 GW = 9.81  # kN/m3 agua
 
