@@ -141,8 +141,8 @@ def build(case, poly, Lx, Ly, nf_y, classify, srf):
     return len(nodes), len(cells), len(pts), mat
 
 
-DT = 6.0e-4; NSTEPS = 10000
-FLOW = False; FLOW_PHI_RES = 2.0; DAMP = 0.10
+DT = 5.0e-4; NSTEPS = 10000
+FLOW = False; FLOW_PHI_RES = 2.0; DAMP = 0.05
 if __name__ == "__main__":
     srf = float(sys.argv[1]) if len(sys.argv) > 1 else 1.6
     if len(sys.argv) > 2: NSTEPS = int(sys.argv[2])
