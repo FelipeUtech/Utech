@@ -16,7 +16,7 @@ DXF = "/home/user/Utech/#seccion_A-A.dxf"
 MPM = "/home/user/mpm-build/build/mpm"
 ROOT = os.path.abspath(os.path.join(HERE, ".."))
 CASE = os.path.join(ROOT, "cases", "seccionA_strata")
-H = 2.5; PPC = 2; APRON = 180.0; SIDE = 2.0; BASEM = 3.0  # runout: berma MUY amplia aguas abajo
+H = 2.5; PPC = 2; APRON = 220.0; SIDE = 2.0; BASEM = 3.0  # runout: berma MUY amplia aguas abajo
 UPSTREAM = 0.0
 GW = 9.81  # kN/m3 agua
 
@@ -68,7 +68,7 @@ def material(hid, srf):
         # residual ~ sin friccion (flujo lubricado por NF critico) => runout largo.
         return dict(id=hid, type="MohrCoulomb2D", density=2000.0, youngs_modulus=3.0e7,
                     poisson_ratio=0.30, friction=16.0, dilation=0.0, cohesion=6000.0,
-                    residual_friction=1.5, residual_dilation=0.0, residual_cohesion=0.0,
+                    residual_friction=10.0, residual_dilation=0.0, residual_cohesion=0.0,
                     peak_pdstrain=0.002, residual_pdstrain=0.02, tension_cutoff=1500.0,
                     softening=True)
     if hid == 3:  # bedrock: rigido, no falla, sin SRF
