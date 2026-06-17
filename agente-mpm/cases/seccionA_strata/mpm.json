@@ -1,0 +1,179 @@
+{
+  "title": "Seccion A-A estratificada (SRF=6.00)",
+  "mesh": {
+    "mesh": "mesh.txt",
+    "entity_sets": "entity_sets.json",
+    "cell_type": "ED2Q4",
+    "isoparametric": false,
+    "io_type": "Ascii2D",
+    "node_type": "N2D",
+    "particles_stresses": "particle_stresses.txt",
+    "boundary_conditions": {
+      "velocity_constraints": [
+        {
+          "nset_id": 0,
+          "dir": 0,
+          "velocity": 0.0
+        },
+        {
+          "nset_id": 0,
+          "dir": 1,
+          "velocity": 0.0
+        },
+        {
+          "nset_id": 1,
+          "dir": 0,
+          "velocity": 0.0
+        },
+        {
+          "nset_id": 2,
+          "dir": 0,
+          "velocity": 0.0
+        }
+      ]
+    }
+  },
+  "particles": [
+    {
+      "generator": {
+        "check_duplicates": true,
+        "location": "part_0.txt",
+        "io_type": "Ascii2D",
+        "pset_id": 0,
+        "particle_type": "P2D",
+        "material_id": 0,
+        "type": "file"
+      }
+    },
+    {
+      "generator": {
+        "check_duplicates": true,
+        "location": "part_1.txt",
+        "io_type": "Ascii2D",
+        "pset_id": 1,
+        "particle_type": "P2D",
+        "material_id": 1,
+        "type": "file"
+      }
+    },
+    {
+      "generator": {
+        "check_duplicates": true,
+        "location": "part_2.txt",
+        "io_type": "Ascii2D",
+        "pset_id": 2,
+        "particle_type": "P2D",
+        "material_id": 2,
+        "type": "file"
+      }
+    },
+    {
+      "generator": {
+        "check_duplicates": true,
+        "location": "part_3.txt",
+        "io_type": "Ascii2D",
+        "pset_id": 3,
+        "particle_type": "P2D",
+        "material_id": 3,
+        "type": "file"
+      }
+    }
+  ],
+  "materials": [
+    {
+      "id": 0,
+      "type": "MohrCoulomb2D",
+      "density": 1038.735983690112,
+      "youngs_modulus": 20000000.0,
+      "poisson_ratio": 0.3,
+      "friction": 4.44397716984317,
+      "dilation": 0,
+      "cohesion": 1666.6666666666667,
+      "residual_friction": 1.780590603816565,
+      "residual_dilation": 0.0,
+      "residual_cohesion": 666.6666666666666,
+      "peak_pdstrain": 0.01,
+      "residual_pdstrain": 0.08,
+      "tension_cutoff": 1000.0,
+      "softening": true
+    },
+    {
+      "id": 1,
+      "type": "MohrCoulomb2D",
+      "density": 1140.6727828746177,
+      "youngs_modulus": 50000000.0,
+      "poisson_ratio": 0.3,
+      "friction": 5.496366544654604,
+      "dilation": 0,
+      "cohesion": 3333.3333333333335,
+      "residual_friction": 2.2042275039720307,
+      "residual_dilation": 0.0,
+      "residual_cohesion": 1333.3333333333333,
+      "peak_pdstrain": 0.01,
+      "residual_pdstrain": 0.08,
+      "tension_cutoff": 1666.6666666666667,
+      "softening": true
+    },
+    {
+      "id": 2,
+      "type": "MohrCoulomb2D",
+      "density": 1191.6411824668705,
+      "youngs_modulus": 400000000.0,
+      "poisson_ratio": 0.28,
+      "friction": 6.414152027062423,
+      "dilation": 5,
+      "cohesion": 8333.333333333334,
+      "residual_friction": 4.4994848625947705,
+      "residual_dilation": 3.5,
+      "residual_cohesion": 5833.333333333333,
+      "peak_pdstrain": 0.01,
+      "residual_pdstrain": 0.08,
+      "tension_cutoff": 4166.666666666667,
+      "softening": true
+    },
+    {
+      "id": 3,
+      "type": "MohrCoulomb2D",
+      "density": 1680.9378185524974,
+      "youngs_modulus": 500000000.0,
+      "poisson_ratio": 0.25,
+      "friction": 45.0,
+      "dilation": 0.0,
+      "cohesion": 1000000.0,
+      "residual_friction": 45.0,
+      "residual_dilation": 0.0,
+      "residual_cohesion": 1000000.0,
+      "peak_pdstrain": 0.0,
+      "residual_pdstrain": 0.0,
+      "tension_cutoff": 1000000.0,
+      "softening": false
+    }
+  ],
+  "external_loading_conditions": {
+    "gravity": [
+      0.0,
+      -9.81
+    ]
+  },
+  "analysis": {
+    "type": "MPMExplicit2D",
+    "stress_update": "usf",
+    "dt": 0.001,
+    "uuid": "strata",
+    "nsteps": 15000,
+    "velocity_update": true,
+    "damping": {
+      "type": "Cundall",
+      "damping_factor": 0.05
+    },
+    "resume": {
+      "resume": false,
+      "uuid": "strata",
+      "step": 0
+    }
+  },
+  "post_processing": {
+    "path": "results/",
+    "output_steps": 150
+  }
+}
