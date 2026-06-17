@@ -109,21 +109,26 @@ def section_polygon_from_dxf(path, profile_layer=None, nf_layer=None,
 
     S = _normalize(surf["pts"], runout_pad, side_margin)
     base_y = float(S[:, 1].min()) - base_margin
+    # trasladar cotas: base -> 0 (para mallar desde y~0)
+    y_shift = base_y
+    S[:, 1] -= y_shift
+    base0 = 0.0
     # cuerpo de suelo: superficie (izq->der) + baja a base + recorre base a izq
     poly = [(float(x), float(y)) for x, y in S]
-    poly.append((float(S[-1, 0]), base_y))   # esquina inferior derecha (pie)
-    poly.append((float(S[0, 0]), base_y))    # esquina inferior izquierda
+    poly.append((float(S[-1, 0]), base0))   # esquina inferior derecha (pie)
+    poly.append((float(S[0, 0]), base0))     # esquina inferior izquierda
     # nivel freático
     nf_y = None
     if nf_layer:
         nfp = [p for p in polys if p["layer"] == nf_layer]
         if nfp:
             allpts = np.array([pt for p in nfp for pt in p["pts"]], dtype=float)
-            nf_y = float(np.median(allpts[:, 1]))  # cota representativa del NF
+            nf_y = float(np.median(allpts[:, 1])) - y_shift  # cota NF en marco trasladado
     meta = {
         "profile_layer": surf["layer"], "npts": len(S),
         "x_range": (float(S[:, 0].min()), float(S[:, 0].max())),
-        "y_range": (base_y, float(S[:, 1].max())),
+        "y_range": (base0, float(S[:, 1].max())),
+        "y_shift": y_shift, "base_margin": base_margin,
         "runout_pad": runout_pad,
     }
     return poly, nf_y, meta

@@ -51,20 +51,34 @@ MAX_ITERS = 12
 STOP_HOUR_UTC = 6          # detener nuevas corridas a las 06:00 UTC
 NO_PROGRESS_LIMIT = 3
 
-# ---- Geometria parametrica de la Seccion A (stand-in del DXF) ----
-# Talud decididamente inestable (cara empinada) para una falla NÍTIDA y finita
-# (slump) que se arresta sobre la berma plana de fundacion.
+# ---- Geometria de la Seccion A ----
+# Si DXF_PATH existe, se usa la geometria REAL (capa TERRENO) y el NF real
+# (NAF_CRITICO); si no, se cae al stand-in parametrico GEOM.
+DXF_PATH = "/home/user/Utech/#seccion_A-A.dxf"
+PROFILE_LAYER = "TERRENO"
+NF_LAYER = "NAF_CRITICO"
 GEOM = dict(crest_h=6.0, slope_angle_deg=55.0, crest_len=4.0,
             toe_x=5.0, foundation_h=2.0)
-H_CELL = 0.25
-RUNOUT_EXT = 10.0   # extension horizontal extra del dominio para runout
+# Escala real ~161 m ancho x 54 m relieve => malla gruesa para tractabilidad.
+H_CELL = 2.0
+RUNOUT_EXT = 35.0   # extension horizontal extra del dominio para runout
+NF_Y = None         # cota del NF (marco trasladado), fijada por domain_from_geom
 
 
 def domain_from_geom():
-    poly = mg.load_section_polygon(**GEOM)
+    global NF_Y
+    if DXF_PATH and os.path.exists(DXF_PATH):
+        import dxf_to_section as D
+        poly, nf_y, meta = D.section_polygon_from_dxf(
+            DXF_PATH, profile_layer=PROFILE_LAYER, nf_layer=NF_LAYER,
+            base_margin=3.0, side_margin=2.0, runout_pad=RUNOUT_EXT)
+        NF_Y = nf_y
+    else:
+        poly = mg.load_section_polygon(**GEOM)
+        NF_Y = GEOM["foundation_h"] + 0.85 * GEOM["crest_h"]
     xs = [p[0] for p in poly]; ys = [p[1] for p in poly]
     Lx = max(xs) + RUNOUT_EXT
-    Ly = max(ys) + 2.0
+    Ly = max(ys) + 3.0
     return poly, Lx, Ly
 
 
@@ -84,15 +98,15 @@ def base_params():
         peak->residual) una vez iniciada la fluencia.
     """
     return dict(
-        dt=4.0e-4, nsteps=12000, output_steps=120,
+        # escala real (~54 m): E mayor, dt mayor por celdas grandes (h=2 m)
+        dt=1.5e-3, nsteps=9000, output_steps=90,
         damping=0.10, ppc=2,
         # solido Mohr-Coulomb (tension efectiva) con ablandamiento MODERADO:
-        # pico bajo => falla bajo gravedad; residual moderado => el slump se
-        # ARRESTA tras deslizar (no flujo cohesionless con ruido de cell-crossing).
-        density=1100.0, E=5.0e6, nu=0.33,
-        friction_peak=22.0, friction_res=18.0,
-        cohesion_peak=3000.0, cohesion_res=1500.0,
-        tension_cutoff=1000.0,
+        # pico => falla bajo NF alto; residual moderado => el slump se ARRESTA.
+        density=1200.0, E=5.0e7, nu=0.30,
+        friction_peak=24.0, friction_res=18.0,
+        cohesion_peak=12000.0, cohesion_res=4000.0,
+        tension_cutoff=5000.0,
         dilation=0.0,
         peak_pdstrain=0.01, residual_pdstrain=0.10,
         # (parametros bifasicos retenidos para reactivar TWOPHASE)
@@ -105,7 +119,9 @@ def base_params():
 
 
 def make_cfg(p, poly, Lx, Ly):
-    wt_y = GEOM["foundation_h"] + p["wt_frac"] * GEOM["crest_h"]
+    # NF: cota real del DXF (NAF_CRITICO) si esta disponible, si no parametrico
+    wt_y = NF_Y if NF_Y is not None else (
+        GEOM["foundation_h"] + p["wt_frac"] * GEOM["crest_h"])
     solid = {
         "id": 0, "type": "MohrCoulomb2D",
         "density": p["density"], "youngs_modulus": p["E"], "poisson_ratio": p["nu"],
