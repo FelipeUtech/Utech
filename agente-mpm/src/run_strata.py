@@ -63,6 +63,14 @@ def geometry():
 def material(hid, srf):
     h = HOR[hid]; rho = rho_eff(h["gsat"])
     phi_p = h["phi"]; c_p = h["c"]
+    if MONO:
+        # cuerpo movilizado homogeneo: se desprende, desliza y CAE ladera abajo.
+        # pico moderado (falla bajo gravedad), residual casi nulo (fluye y cae).
+        return dict(id=hid, type="MohrCoulomb2D", density=2000.0, youngs_modulus=3.0e7,
+                    poisson_ratio=0.30, friction=18.0, dilation=0.0, cohesion=8000.0,
+                    residual_friction=4.0, residual_dilation=0.0, residual_cohesion=0.0,
+                    peak_pdstrain=0.003, residual_pdstrain=0.03, tension_cutoff=2000.0,
+                    softening=True)
     if hid == 3:  # bedrock: rigido, no falla, sin SRF
         return dict(id=3, type="MohrCoulomb2D", density=rho, youngs_modulus=h["E"],
                     poisson_ratio=h["nu"], friction=45.0, dilation=0.0, cohesion=1.0e6,
@@ -142,12 +150,14 @@ def build(case, poly, Lx, Ly, nf_y, classify, srf):
 
 
 DT = 8.0e-4; NSTEPS = 10000
-FLOW = False; FLOW_PHI_RES = 2.0; DAMP = 0.05
+FLOW = False; FLOW_PHI_RES = 2.0; DAMP = 0.05; MONO = False
 if __name__ == "__main__":
     srf = float(sys.argv[1]) if len(sys.argv) > 1 else 1.6
     if len(sys.argv) > 2: NSTEPS = int(sys.argv[2])
     if len(sys.argv) > 3 and sys.argv[3] == "flow":
         FLOW = True; DAMP = 0.02
+    if len(sys.argv) > 3 and sys.argv[3] == "mono":
+        MONO = True; DAMP = 0.02
     poly, Lx, Ly, nf_y, classify = geometry()
     nn, nc, npart, mat = build(CASE, poly, Lx, Ly, nf_y, classify, srf)
     names = ["VI", "V", "IV", "I"]
