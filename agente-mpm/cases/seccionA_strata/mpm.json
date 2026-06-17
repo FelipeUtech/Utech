@@ -1,5 +1,5 @@
 {
-  "title": "Seccion A-A estratificada (SRF=6.00)",
+  "title": "Seccion A-A estratificada (SRF=4.00)",
   "mesh": {
     "mesh": "mesh.txt",
     "entity_sets": "entity_sets.json",
@@ -86,15 +86,15 @@
       "density": 1038.735983690112,
       "youngs_modulus": 20000000.0,
       "poisson_ratio": 0.3,
-      "friction": 4.44397716984317,
+      "friction": 6.6493516295983595,
       "dilation": 0,
-      "cohesion": 1666.6666666666667,
-      "residual_friction": 1.780590603816565,
+      "cohesion": 2500.0,
+      "residual_friction": 2.0,
       "residual_dilation": 0.0,
-      "residual_cohesion": 666.6666666666666,
-      "peak_pdstrain": 0.01,
-      "residual_pdstrain": 0.08,
-      "tension_cutoff": 1000.0,
+      "residual_cohesion": 0.0,
+      "peak_pdstrain": 0.002,
+      "residual_pdstrain": 0.02,
+      "tension_cutoff": 1250.0,
       "softening": true
     },
     {
@@ -103,15 +103,15 @@
       "density": 1140.6727828746177,
       "youngs_modulus": 50000000.0,
       "poisson_ratio": 0.3,
-      "friction": 5.496366544654604,
+      "friction": 8.213210701738188,
       "dilation": 0,
-      "cohesion": 3333.3333333333335,
-      "residual_friction": 2.2042275039720307,
+      "cohesion": 5000.0,
+      "residual_friction": 2.0,
       "residual_dilation": 0.0,
-      "residual_cohesion": 1333.3333333333333,
-      "peak_pdstrain": 0.01,
-      "residual_pdstrain": 0.08,
-      "tension_cutoff": 1666.6666666666667,
+      "residual_cohesion": 0.0,
+      "peak_pdstrain": 0.002,
+      "residual_pdstrain": 0.02,
+      "tension_cutoff": 2500.0,
       "softening": true
     },
     {
@@ -120,15 +120,15 @@
       "density": 1191.6411824668705,
       "youngs_modulus": 400000000.0,
       "poisson_ratio": 0.28,
-      "friction": 6.414152027062423,
+      "friction": 9.5715777274436,
       "dilation": 5,
-      "cohesion": 8333.333333333334,
-      "residual_friction": 4.4994848625947705,
+      "cohesion": 12500.0,
+      "residual_friction": 2.0,
       "residual_dilation": 3.5,
-      "residual_cohesion": 5833.333333333333,
-      "peak_pdstrain": 0.01,
-      "residual_pdstrain": 0.08,
-      "tension_cutoff": 4166.666666666667,
+      "residual_cohesion": 0.0,
+      "peak_pdstrain": 0.002,
+      "residual_pdstrain": 0.02,
+      "tension_cutoff": 6250.0,
       "softening": true
     },
     {
@@ -160,11 +160,11 @@
     "stress_update": "usf",
     "dt": 0.001,
     "uuid": "strata",
-    "nsteps": 15000,
+    "nsteps": 16000,
     "velocity_update": true,
     "damping": {
       "type": "Cundall",
-      "damping_factor": 0.05
+      "damping_factor": 0.02
     },
     "resume": {
       "resume": false,
@@ -174,6 +174,6 @@
   },
   "post_processing": {
     "path": "results/",
-    "output_steps": 150
+    "output_steps": 160
   }
 }
