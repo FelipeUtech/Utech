@@ -1,0 +1,84 @@
+{
+  "score": 6,
+  "iter": 1,
+  "ckpt": "/home/user/Utech/agente-mpm/checkpoints/iter01_score6",
+  "rep": {
+    "results_dir": "/home/user/Utech/agente-mpm/cases/seccionA/results",
+    "n_frames": 100,
+    "gates": {
+      "a_no_nan": {
+        "pass": true,
+        "detail": "NaN detectado=False"
+      },
+      "b_mass": {
+        "pass": true,
+        "detail": "desviacion relativa masa=0.00e+00 (tol 0.02)",
+        "value": 0.0
+      },
+      "c_kinetic_energy": {
+        "pass": true,
+        "detail": "KE0=6.731e+02 peak=1.045e+06@4 final=6.255e+02 (final/peak=0.001); rose=True decayed=True not_diverge=True",
+        "ke_peak": 1044592.4708579732,
+        "ke_final": 625.4728871400407,
+        "ipeak": 4
+      },
+      "d_shear_band": {
+        "pass": true,
+        "detail": "pdstrain_max=7.246e-02 frac_en_banda=0.067 gini=0.508; localizada=True (no difusa ni cuerpo rigido)",
+        "pd_max": 0.07245584541286545,
+        "frac_band": 0.06721748859626474,
+        "gini": 0.5082221749937557
+      },
+      "e_domain_no_popcorn": {
+        "pass": true,
+        "detail": "particulas fuera de dominio=0; vmax_global=1.602 v_fisica~34.16 popcorn=False",
+        "popcorn": false,
+        "in_domain": true
+      },
+      "f_runout_converge": {
+        "pass": true,
+        "detail": "runout_final=0.003 m, variacion_ultimos_frames=0.0000 m (rel=0.000, tol 0.05); converge=True",
+        "runout": 0.0031581522542296625,
+        "span": 2.485313643774134e-08
+      }
+    },
+    "passed": true,
+    "score": 6,
+    "score_max": 6,
+    "_run_s": 280.7653820514679,
+    "_mesh": [
+      3100,
+      2970,
+      11619
+    ],
+    "_Lx": 197.978,
+    "_Ly": 59.47040000000004
+  },
+  "params": {
+    "dt": 0.001,
+    "nsteps": 12000,
+    "output_steps": 120,
+    "damping": 0.12,
+    "ppc": 3,
+    "density": 1200.0,
+    "E": 50000000.0,
+    "nu": 0.3,
+    "friction_peak": 24.0,
+    "friction_res": 18.0,
+    "cohesion_peak": 12000.0,
+    "cohesion_res": 4000.0,
+    "tension_cutoff": 5000.0,
+    "dilation": 0.0,
+    "peak_pdstrain": 0.01,
+    "residual_pdstrain": 0.1,
+    "porosity": 0.4,
+    "k": 0.0001,
+    "liq_density": 1000.0,
+    "liq_bulk": 2000000.0,
+    "liq_visc": 0.001,
+    "wt_frac": 0.85,
+    "runout_ext": 35.0
+  },
+  "Lx": 197.978,
+  "Ly": 59.47040000000004
+}
