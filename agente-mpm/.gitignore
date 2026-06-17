@@ -5,3 +5,8 @@ _frames/
 **/_frames/
 *.h5
 # binarios MPM (se compilan aparte)
+
+# casos transitorios (se regeneran cada corrida)
+cases/seccionA_strata/
+cases/seccionA_flow/
+cases/seccionA_runout/
