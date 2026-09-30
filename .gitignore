@@ -50,3 +50,7 @@ results/
 # OS
 .DS_Store
 Thumbs.db
+
+# Planos generados que se versionan como entregable
+!maquinaria/**/planos/*.pdf
+!maquinaria/**/planos/*.png
