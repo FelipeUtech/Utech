@@ -104,6 +104,10 @@ Utech/
 └── requirements.txt
 ```
 
+## Maquinaria
+
+- [`maquinaria/piloteadora_UT_PR280`](maquinaria/piloteadora_UT_PR280/README.md): planos y memoria de cálculo de una perforadora rotativa para pilotes Ø1.2 m × 40 m (UT-PR280).
+
 ## Referencias
 
 - Reese, L. C., & Van Impe, W. F. (2001). Single Piles and Pile Groups Under Lateral Loading
