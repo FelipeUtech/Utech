@@ -881,16 +881,21 @@ function affinity(c,p){const lg=L[c.l],home=L[CL[p.club].l];let w=1;if(lg.c===(p
  if(p.ovr>=74&&lg.cf==='EU')w*=1.6;if(lg.cf==='AS')w*=S.sm.saudi?6:.5;return w}
 function makeOffer(c,p,type){const rk=roleFor(p,c);const sal=round(salaryFor(p.ovr,p.age,c)*rnd(1,1.25)/1000)*1000;
  return{club:c.n,l:c.l,s:c.s,type,years:type==='loan'?1:clamp(ri(2,5)-(p.age>=31?2:0),1,5),salary:type==='loan'?p.salary:Math.max(sal,type==='free'?0:p.salary),role:rk,fee:type==='transfer'?round(marketValue(p.ovr,p.age)*rnd(.9,1.4)/1e4)*1e4:0}}
+function fillOffers(out,min){const p=S.p,eo=Math.min(p.ovr,108),free=p.contract<=0&&!p.loan;
+ const pool=CLUBS.filter(c=>c.n!==p.club&&(!p.loan||c.n!==p.loan.parent)&&!out.some(o=>o.club===c.n)&&accessible(c,p)&&c.s<=eo+1);
+ const tgt=pool.length?Math.min(eo-2,Math.max(...pool.map(c=>c.s))):0;
+ while(out.length<min&&pool.length){const c=wpick(pool,x=>Math.exp(-Math.abs(x.s-tgt)/4)*affinity(x,p));if(!c)break;pool.splice(pool.indexOf(c),1);out.push(makeOffer(c,p,free?'free':'transfer'))}return out}
 function genOffers(kind){const p=S.p,cur=CL[p.club];const jump=-[-1.5,0,1,2][DF()]+Math.min(6,1+p.rep/35+(p.agentTop?1.5:0)+((S.lastNota||6.8)>=7.3?1.5:0));
  const free=kind==='summer'&&p.contract<=0&&!p.loan;
  let cand=CLUBS.filter(c=>c.n!==p.club&&(!p.loan||c.n!==p.loan.parent)&&accessible(c,p));
  const eo=Math.min(p.ovr,108);
  if(kind==='winter')cand=cand.filter(c=>c.s<=eo+1&&c.s>=eo-4);
  else cand=cand.filter(c=>c.s<=eo+jump&&c.s>=eo-(free?14:8));
- let n=kind==='winter'?2:clamp(1+(p.rep>45?1:0)+(p.agentTop?1:0)+((S.lastNota||6.6)>=7?1:0)+(free?1:0)+(R()<.5?1:0),1,5);if(kind==='summer'&&!(p.rep>=70&&roleFor(p,CL[p.club])==='estrella'))n=Math.min(n,1);
+ let n=kind==='winter'?2:clamp(1+(p.rep>45?1:0)+(p.agentTop?1:0)+((S.lastNota||6.6)>=7?1:0)+(free?1:0)+(R()<.5?1:0),1,5);if(kind==='summer')n=Math.max(3,p.rep>=70&&roleFor(p,CL[p.club])==='estrella'?n:3);
  const out=[];const used=new Set();
  for(let i=0;i<n&&cand.length;i++){const c=wpick(cand.filter(x=>!used.has(x.n)),x=>Math.exp(-Math.abs(x.s-(eo+1))/3)*affinity(x,p));if(!c)break;used.add(c.n);
   const type=kind==='winter'||(p.age<=22&&c.s-p.ovr>=0&&R()<.35&&!free)?'loan':free?'free':'transfer';out.push(makeOffer(c,p,type))}
+ if(kind==='summer')fillOffers(out,3);
  if(free&&!out.length){const low=CLUBS.filter(c=>c.s<=p.ovr+1).sort((a,b)=>b.s-a.s).slice(0,6);if(low.length)out.push(makeOffer(pick(low),p,'free'))}
  return out}
 
@@ -1121,7 +1126,7 @@ function toMarket(){const p=S.p;let msg='';
  const free=p.contract<=0;let renew=null;const rk=roleFor(p,CL[p.club]);
  if(!free&&p.contract<=1&&['estrella','titular','rotacion'].includes(rk))renew={years:clamp(p.age>=31?ri(1,2):ri(2,4),1,4),salary:Math.max(round(p.salary*1.1/1000)*1000,salaryFor(p.ovr,p.age,CL[p.club]))};
  if(free&&['estrella','titular'].includes(rk)&&R()<.6)renew={years:p.age>=31?1:2,salary:salaryFor(p.ovr,p.age,CL[p.club])};
- let offs=genOffers('summer');if(S.lastDrop){const cur=CL[p.club].s;const gone=offs.filter(o=>o.s>=cur+3&&R()<.5);if(gone.length){offs=offs.filter(o=>!gone.includes(o));msg+=gone.map(o=>`${o.club} retiró su oferta tras tu bajón de media. `).join('');news(gone.map(o=>`${o.club} retiró su oferta.`).join(' '))}}const hOf=homeOffers();if(hOf.length){offs.unshift(...hOf.filter(h=>!offs.some(o=>o.club===h.club)));msg+=`Tu país te llama: ${hOf.length>1?'hay clubes':'hay un club'} de ${p.home||p.nat} que quiere${hOf.length>1?'n':''} tu regreso triunfal. `}
+ let offs=genOffers('summer');if(S.lastDrop){const cur=CL[p.club].s;const gone=offs.filter(o=>o.s>=cur+3&&R()<.5);if(gone.length){offs=offs.filter(o=>!gone.includes(o));msg+=gone.map(o=>`${o.club} retiró su oferta tras tu bajón de media. `).join('');news(gone.map(o=>`${o.club} retiró su oferta.`).join(' '))}fillOffers(offs,3)}const hOf=homeOffers();if(hOf.length){offs.unshift(...hOf.filter(h=>!offs.some(o=>o.club===h.club)));msg+=`Tu país te llama: ${hOf.length>1?'hay clubes':'hay un club'} de ${p.home||p.nat} que quiere${hOf.length>1?'n':''} tu regreso triunfal. `}
  if(free)msg+=`Se terminó tu contrato con ${p.club}. `;
  if(!free&&rk==='reserva'&&p.age>=21)msg+='El club te puso en la lista de transferibles. ';
  msg+=offs.length?`Tienes ${offs.length} oferta${offs.length>1?'s':''} sobre la mesa. El rol que ves es el que tendrías hoy en cada club.`:'Nadie llamó esta vez.';
