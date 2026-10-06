@@ -67,6 +67,7 @@ button{font:inherit;color:inherit}
 .rk-pos{font-family:var(--f-display);font-weight:800;font-size:20px;width:28px;text-align:center}
 .rk-name{flex:1;min-width:0;overflow-wrap:anywhere;font-weight:600}
 .rk-pts{font-variant-numeric:tabular-nums}
+.rk-set{display:flex;flex-direction:column;gap:8px}
 .a3d{position:fixed;inset:0;z-index:1000;background:rgba(4,7,14,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:calc(env(safe-area-inset-top,0px) + 12px) 12px calc(env(safe-area-inset-bottom,0px) + 12px)}
 .a3d-stage{position:relative;width:min(100%,1100px,calc((100vh - 110px)*16/9));aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000}
 @media (max-aspect-ratio:1/1){.a3d-stage{width:100%;aspect-ratio:auto;height:min(74vh,150vw)}}
@@ -313,6 +314,7 @@ td .lg{color:var(--muted);font-size:13px;display:block}
   <label>Dorsal<input id="set-num" type="number" min="1" max="99"></label>
   <label id="set-latbox" hidden>Rol de lateral<select id="set-lat"><option value="extremo">Falso extremo</option><option value="defensa">Defensa lateral</option></select></label>
   <label hidden>Dificultad<select id="set-diff"><option value="0">Fácil: para aprender, juegas más y creces más rápido</option><option value="1">Normal: para disfrutar la carrera</option><option value="2">Difícil: cuesta jugar, crecer y ganar</option><option value="3">Leyenda: solo para cracks de verdad</option></select></label>
+  <div class="rk-set" id="set-rkbox"><label>Usuario del ranking<input id="set-rkuser" maxlength="20" placeholder="Ej. agusblox" autocomplete="off"></label><button class="btn ghost small" id="set-rank" type="button">Ver ranking en línea</button></div>
   <label class="chk"><input type="checkbox" id="set-3d"> Animaciones 3D: gala, penales y entrenamiento</label>
   <p class="note" id="set-note" style="margin:0"></p>
   <div id="set-reset" class="reset-box" hidden><b>Reiniciar carrera</b><span class="note">Borra tu carrera actual y vuelves a crear un jugador desde cero.</span>
@@ -1549,16 +1551,17 @@ let pendingOrder=null;
 (function(){const box=document.getElementById('settings'),$=id=>document.getElementById(id);let last=null;
  function open(){last=document.activeElement;const inGame=S&&S.p;
   $('set-name').value=inGame?S.p.name:($('name')?$('name').value:'');$('set-num').value=inGame?S.p.num:($('num')?$('num').value:9);
-  $('set-diff').value=String(DF());$('set-3d').checked=a3dOn();$('set-reset').hidden=!inGame;$('set-reset-confirm').hidden=true;$('set-reset-ask').hidden=false;$('set-latbox').hidden=!(inGame&&isLat(S.p));if(inGame&&isLat(S.p))$('set-lat').value=S.p.latRole||'defensa';$('set-note').textContent=inGame?'Los cambios se aplican desde ahora en tu carrera actual.':'Se aplicará a la carrera que vas a crear.';
+  $('set-diff').value=String(DF());$('set-3d').checked=a3dOn();$('set-rkuser').value=rkUser();$('set-rkbox').hidden=!FB_URL;$('set-reset').hidden=!inGame;$('set-reset-confirm').hidden=true;$('set-reset-ask').hidden=false;$('set-latbox').hidden=!(inGame&&isLat(S.p));if(inGame&&isLat(S.p))$('set-lat').value=S.p.latRole||'defensa';$('set-note').textContent=inGame?'Los cambios se aplican desde ahora en tu carrera actual.':'Se aplicará a la carrera que vas a crear.';
   box.hidden=false;$('set-name').focus()}
  function close(){box.hidden=true;if(last&&last.focus)last.focus()}
  $('set-reset-ask').onclick=()=>{$('set-reset-confirm').hidden=false;$('set-reset-ask').hidden=true;$('set-reset-no').focus()};
  $('set-reset-no').onclick=()=>{$('set-reset-confirm').hidden=true;$('set-reset-ask').hidden=false};
  $('set-reset-yes').onclick=()=>{archiveCareer('reinicio');S=null;try{localStorage.removeItem('trayectoria-fc')}catch(e){}uiTab='carrera';mView='opciones';close();render();window.scrollTo(0,0)};
  $('gear').onclick=open;$('set-cancel').onclick=close;
+ $('set-rank').onclick=()=>{const u=rkSetUser($('set-rkuser').value);$('set-rkuser').value=u;if(!u){$('set-rkuser').focus();return}close();rankingShow(true)};
  box.addEventListener('click',e=>{if(e.target===box)close()});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!box.hidden)close()});
- $('set-save').onclick=()=>{try{localStorage.setItem(A3D_KEY,$('set-3d').checked?'1':'0')}catch(e){}const name=($('set-name').value||'').trim().slice(0,28),num=clamp(+$('set-num').value||9,1,99),d=clamp(+$('set-diff').value||0,0,3);
+ $('set-save').onclick=()=>{try{localStorage.setItem(A3D_KEY,$('set-3d').checked?'1':'0')}catch(e){}if($('set-rkuser').value.trim())rkSetUser($('set-rkuser').value);const name=($('set-name').value||'').trim().slice(0,28),num=clamp(+$('set-num').value||9,1,99),d=clamp(+$('set-diff').value||0,0,3);
   if(S&&S.p){const old=DF();if(name)S.p.name=name;S.p.num=num;S.diff=d;if(isLat(S.p)){const nl=$('set-lat').value;if(nl!==(S.p.latRole||'defensa')){S.p.latRole=nl;news(`Cambiaste tu rol a ${LATR[nl].n}.`)}}if(old!==d)news(`Dificultad cambiada a ${DIFFS[d].n}.`);save();close();render()}
   else{DIFF_START=d;if(name&&$('name'))$('name').value=name;if($('num'))$('num').value=num;if($('diff'))$('diff').value=String(d);close();const ev=$('diff');if(ev)ev.dispatchEvent(new Event('change'))}};
 })();
@@ -1600,8 +1603,8 @@ async function rkFetch(){const r=await fetch(`${FB_URL}/ranking.json`);if(!r.ok)
 function rkBox(){let el=document.getElementById('rk');if(el)return el;el=document.createElement('div');el.id='rk';el.className='rk';el.hidden=true;el.setAttribute('role','dialog');el.setAttribute('aria-labelledby','rk-h');
  el.innerHTML='<div class="rk-card"><h2 id="rk-h">Ranking en línea</h2><p class="note" id="rk-sub"></p><ol class="rk-list" id="rk-list"></ol><button class="btn" id="rk-go" type="button">Seguir</button></div>';
  document.body.appendChild(el);el.querySelector('#rk-go').onclick=()=>{el.hidden=true};return el}
-function rankingShow(){if(!FB_URL||!rkUser()||window.__NO3D)return;const el=rkBox(),me=rkUser(),list=el.querySelector('#rk-list');
- el.querySelector('#rk-sub').textContent=`Nuevo club: ${S.p.club}. Puntos sumando todas tus carreras (Fácil −30%, Normal −10%).`;list.innerHTML='<li class="note">Cargando…</li>';el.hidden=false;
+function rankingShow(manual){if(!FB_URL||!rkUser()||(window.__NO3D&&!manual))return;const el=rkBox(),me=rkUser(),list=el.querySelector('#rk-list');
+ el.querySelector('#rk-sub').textContent=`${manual||!S||!S.p?'':'Nuevo club: '+S.p.club+'. '}Puntos sumando todas tus carreras (Fácil −30%, Normal −10%).`;list.innerHTML='<li class="note">Cargando…</li>';el.hidden=false;
  rkPush().then(rkFetch).then(rows=>{list.innerHTML=rows.length?rows.slice(0,30).map((x,i)=>`<li class="${x.u===me?'me':''}"><span class="rk-pos">${i+1}</span><span class="rk-name">${esc(x.u)}</span><b class="rk-pts">${x.pts.toLocaleString('es-CO')}</b></li>`).join(''):'<li class="note">Todavía no hay jugadores.</li>'})
   .catch(()=>{list.innerHTML='<li class="note">No se pudo conectar al ranking. Funciona en el link de GitHub con internet.</li>'})}
 /* ---------- animaciones 3D (gala, penal, entrenamiento) ---------- */
