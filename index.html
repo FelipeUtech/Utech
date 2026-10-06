@@ -875,7 +875,8 @@ function elite(c,p){const cur=CL[p.club]||{s:60};const nota=S.lastNota||6.5;cons
   if(c.s-cur.s>6&&fame<90)return false;return R()<.5}
  if(c.s>=80){if(p.ovr<c.s+1||fame<50||nota<7.0)return false;if(c.s-cur.s>8)return false;return R()<.7}
  return p.ovr>=c.s-2&&c.s-cur.s<=10}
-function accessible(c,p){if(!elite(c,p))return false;const lg=L[c.l];if(lg.cf==='AS')return p.age>=26&&p.ovr>=73;
+function accessible(c,p){if(!elite(c,p))return false;return leagueOk(c,p)}
+function leagueOk(c,p){const lg=L[c.l];if(lg.cf==='AS')return p.age>=26&&p.ovr>=73;
  if(['ESP','ENG','ITA','GER','FRA'].includes(c.l))return p.ovr>=69||p.rep>=55;if(lg.eu)return p.ovr>=64;return true}
 function affinity(c,p){const lg=L[c.l],home=L[CL[p.club].l];let w=1;if(lg.c===(p.home||p.nat))w*=1.6;if(lg.cf&&lg.cf===NAT[p.nat].cf)w*=1.2;if(lg.c===home.c)w*=1.3;
  if(p.ovr>=74&&lg.cf==='EU')w*=1.6;if(lg.cf==='AS')w*=S.sm.saudi?6:.5;return w}
@@ -889,6 +890,13 @@ function genOffers(kind){const p=S.p,cur=CL[p.club];const jump=-[-1.5,0,1,2][DF(
  const free=kind==='summer'&&p.contract<=0&&!p.loan;
  let cand=CLUBS.filter(c=>c.n!==p.club&&(!p.loan||c.n!==p.loan.parent)&&accessible(c,p));
  const eo=Math.min(p.ovr,108);
+ if(kind==='summer'){const cs=cur.s,pool=cand.filter(c=>c.s<=Math.max(eo+Math.max(jump,2),cs+4)),out=[];
+  const good=pool.filter(c=>c.s>=cs+2),mid=CLUBS.filter(c=>c.n!==p.club&&(!p.loan||c.n!==p.loan.parent)&&Math.abs(c.s-cs)<=2&&p.ovr>=c.s-3&&leagueOk(c,p));
+  const pf=(arr,tgt)=>{const a=arr.filter(c=>!out.some(o=>o.club===c.n));return a.length?wpick(a,x=>Math.exp(-Math.abs(x.s-tgt)/3)*affinity(x,p)):null};
+  const typ=c=>free?'free':(p.age<=22&&c.s-p.ovr>=0&&R()<.35)?'loan':'transfer';
+  for(const [arr,tgt] of [[good,cs+6],[good,cs+3],[mid,cs]]){const c=pf(arr,tgt)||pf(pool,tgt);if(c)out.push(makeOffer(c,p,typ(c)))}
+  const extra=p.rep>=70&&roleFor(p,cur)==='estrella'?ri(0,2):0;for(let i=0;i<extra;i++){const c=pf(pool,eo);if(c)out.push(makeOffer(c,p,typ(c)))}
+  fillOffers(out,3);if(free&&!out.length){const low=CLUBS.filter(c=>c.s<=p.ovr+1).sort((a,b)=>b.s-a.s).slice(0,6);if(low.length)out.push(makeOffer(pick(low),p,'free'))}return out}
  if(kind==='winter')cand=cand.filter(c=>c.s<=eo+1&&c.s>=eo-4);
  else cand=cand.filter(c=>c.s<=eo+jump&&c.s>=eo-(free?14:8));
  let n=kind==='winter'?2:clamp(1+(p.rep>45?1:0)+(p.agentTop?1:0)+((S.lastNota||6.6)>=7?1:0)+(free?1:0)+(R()<.5?1:0),1,5);if(kind==='summer')n=Math.max(3,p.rep>=70&&roleFor(p,CL[p.club])==='estrella'?n:3);
@@ -1093,7 +1101,7 @@ function scene(){const p=S.p,st=S.step,club=CL[p.club];let sc;
  CHOICES=sc.choices;return sceneHTML(sc)}
 
 function offerChoice(o,f){const lg=L[o.l];const t=o.type==='home'?(o.past?'Regreso a casa':'Regreso triunfal'):o.type==='loan'?'Préstamo':o.type==='free'?'Libre':'Traspaso';
- return{l:clubTag(o.club,22),d:`${lg.n} · nivel ${o.s} · ${t}${o.fee?` por ${fmtM(o.fee)}`:''}`,meta:`${S.statue?`<span class="chip gold">Leyenda viva</span>`:''}${o.type==='home'?`<span class="chip gold">Regreso triunfal</span>`:''}${rivalOf(o.club)?`<span class="chip bad">Rival de ${esc(rivalOf(o.club))}</span>`:''}${roleChip(o.role)}<span class="chip">${fmtM(o.salary)}/año</span><span class="chip">${o.years} año${o.years>1?'s':''}</span>`,f}}
+ return{l:clubTag(o.club,22),d:`${lg.n} · nivel ${o.s} · ${t}${o.fee?` por ${fmtM(o.fee)}`:''}`,meta:`${S.statue?`<span class="chip gold">Leyenda viva</span>`:''}${o.type==='home'?`<span class="chip gold">Regreso triunfal</span>`:''}${rivalOf(o.club)?`<span class="chip bad">Rival de ${esc(rivalOf(o.club))}</span>`:''}${o.type==='home'?'':(()=>{const d=o.s-(CL[S.p.club]||{s:o.s}).s;return d>=2?'<span class="chip good">Mejor club</span>':d>=-2?'<span class="chip">Nivel parecido</span>':'<span class="chip warn">Club más chico</span>'})()}${roleChip(o.role)}<span class="chip">${fmtM(o.salary)}/año</span><span class="chip">${o.years} año${o.years>1?'s':''}</span>`,f}}
 function statsHTML(h){const por=S.p.pos==='POR';return `<div class="statline">
  <div class="stat"><b>${h.apps}</b><span>Partidos</span></div><div class="stat"><b>${h.min.toLocaleString('es-CO')}</b><span>Minutos</span></div>
  ${por?`<div class="stat"><b>${h.cs}</b><span>Vallas invictas</span></div>`:`<div class="stat"><b>${h.g}</b><span>Goles</span></div><div class="stat"><b>${h.a}</b><span>Asistencias</span></div>`}
