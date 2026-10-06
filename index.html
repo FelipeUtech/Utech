@@ -448,6 +448,10 @@ function fx(d){const p=S.p,chips=[];
 
 /* ---------- eventos ---------- */
 const EVENTS=[
+{id:'estudio',w:p=>p.age<=18&&!S.studyDone&&(S.studyNo||0)<2,t:'Tu mamá quiere que estudies',x:p=>`Tu mamá te sienta en la mesa de la cocina: "El fútbol es muy bonito, mijo, pero primero el colegio". Quiere que termines el bachillerato${S.studyNo?' y esta vez no piensa ceder':''}. Las clases de la tarde chocan con los entrenamientos.`,
+ o:[{l:'Hacerle caso y estudiar',d:'Sin entrenamiento esta temporada: casi no mejoras',f:()=>{S.studyDone=1;news('Dejaste los entrenamientos de la tarde para terminar el colegio.');return['Te pones juicioso con el colegio y faltas a los entrenamientos de la tarde. Tu mamá está feliz, pero tu cuerpo lo nota: esta temporada no entrenas.',[{t:'Sin entrenamiento',c:'bad'}].concat(fx({growth:-1.2,morale:6,prof:6}))]}},
+  {l:'Estudiar de noche y entrenar de día',d:'Mejoras un poco menos y te cansas',f:()=>{S.studyDone=1;return['Clases a las 7 p. m., tareas hasta medianoche y entrenamiento a las 8 a. m. Cumples con las dos cosas, pero vas cansado.',fx({growth:-.4,inj:.03,prof:4,morale:-2})]}},
+  {l:'Decirle que no: solo fútbol',d:'Tu mamá se enoja',f:()=>{S.studyNo=(S.studyNo||0)+1;return['Le dices que vas a ser futbolista sí o sí. Tu mamá no te habla en una semana.',fx({morale:-10,growth:.2})]}}]},
 {id:'fiesta',t:'Fiesta antes del clásico',x:p=>`Faltan dos días para el clásico y tres compañeros te invitan a una fiesta en la casa de un cantante. Van a ir hinchas del club con el celular en la mano.`,
  o:[{l:'Ir un rato y volver temprano',d:'Algo de riesgo',f:()=>R()<.35?['Alguien subió un video tuyo a las 2 a. m. El DT te dejó en el banco en el clásico.',fx({coach:-12,morale:4,miss:.04})]:['Te fuiste a las 11 p. m. y nadie dijo nada. El grupo te ve como uno más.',fx({morale:8,coach:1})]},
   {l:'Quedarte en casa',d:'Descanso y concentración',f:()=>['Dormiste nueve horas y llegaste al clásico a tope.',fx({prof:4,coach:3,morale:-2})]},
@@ -1095,7 +1099,7 @@ function statsHTML(h){const por=S.p.pos==='POR';return `<div class="statline">
  ${DSTAT[S.p.pos]&&h.x?DSTAT[S.p.pos].map(([k,n])=>`<div class="stat"><b>${k==='cs'?h.cs:xval(h.x,k)+(['pas','pct'].includes(k)?'%':'')}</b><span>${n}</span></div>`).join(''):''}
  <div class="stat"><b>${h.nota?h.nota.toFixed(2).replace('.',','):'—'}</b><span>Nota media</span></div></div>`}
 
-function pickEvent(){const p=S.p;const el=EVENTS.filter(e=>(!e.w||e.w(p))&&!S.sm.used.includes(e.id)&&!(S.recent||[]).includes(e.id));const e=pick(el.length?el:EVENTS);if(e.pre)e.pre(p);S.sm.used.push(e.id);S.recent=[e.id].concat(S.recent||[]).slice(0,6);return e.id}
+function pickEvent(){const p=S.p;const el=EVENTS.filter(e=>(!e.w||e.w(p))&&!S.sm.used.includes(e.id)&&!(S.recent||[]).includes(e.id));const st=el.find(e=>e.id==='estudio');const e=st&&R()<.3?st:pick(el.length?el:EVENTS);if(e.pre)e.pre(p);S.sm.used.push(e.id);S.recent=[e.id].concat(S.recent||[]).slice(0,6);return e.id}
 function nextAfterPre(){show('event',{id:pickEvent(),next:'h1'})}
 function preDone(t,ch){show('result',{title:'Pretemporada',t,ch,next:'evA'});const f=S.sm.focus,v=f==='fisico'||f==='doble'?'fisico':f==='tecnica'?(S.p.pos==='POR'?'portero':'tecnica'):null;if(v)anim3d('train',v)}
 function go(k){if(k==='pre'){show('pre');return}if(k==='season'){nextSeason();return}
