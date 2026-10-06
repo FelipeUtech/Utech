@@ -1531,6 +1531,21 @@ function migrate(){if(!S||!S.p)return;if(!S.dv){if(S.diff!=null)S.diff=Math.min(
  const fut=S.awards.filter(a=>a.n==='Balón de Oro'&&a.y>S.year);
  if(fut.length){S.awards=S.awards.filter(a=>!(a.n==='Balón de Oro'&&a.y>S.year));S.log=S.log.filter(n=>!(/2043/.test(n.t)&&/Claude|France Football/.test(n.t)));
   news(`Corrección: se quitó un Balón de Oro de ${fut.map(a=>a.y).join(', ')} que llegó por error desde tu carrera anterior.`)}}
+/* ---------- modo Fácil: palabras sencillas ---------- */
+const EZW=[[/Definición y técnica/g,'Tiro y control del balón'],[/definición/g,'puntería'],[/Definición/g,'Puntería'],
+ [/[Pp]rogresión/g,m=>m[0]==='P'?'Mejora':'mejora'],[/profesionalismo/g,'disciplina'],[/Profesionalismo/g,'Disciplina'],
+ [/pagó la cláusula/g,'pagó lo que pedían'],[/\bcedido\b/g,'prestado'],[/\bCedido\b/g,'Prestado'],
+ [/\brotación\b/g,'juegas a veces'],[/\bRotación\b/g,'Juegas a veces'],[/\bROTACIÓN\b/g,'JUEGAS A VECES'],[/Sin minutos/g,'No juegas'],[/SIN MINUTOS/g,'NO JUEGAS'],
+ [/vallas invictas/g,'partidos sin recibir gol'],[/contragolpe/g,'ataque rápido del rival'],[/falta táctica/g,'falta para frenar la jugada'],
+ [/anticipación/g,'adelantarte al rival'],[/Anticipación/g,'Adelantarte al rival'],[/[Mm]arcaje/g,m=>m[0]==='M'?'Marcar de cerca':'marcar de cerca'],
+ [/Te dosifican/g,'Te hacen descansar'],[/Bajar la carga/g,'Entrenar menos'],[/Infiltrarte y seguir/g,'Jugar con calmantes'],
+ [/\bpretemporada\b/g,'preparación'],[/\bPretemporada\b/g,'Preparación'],[/\bPRETEMPORADA\b/g,'PREPARACIÓN'],
+ [/(menos|y) vitrina/g,'$1 fama'],[/\bvitrinas\b/g,'repisas de trofeos'],[/\bDT\b/g,'entrenador'],
+ [/\bpotencial\b/g,'talento'],[/\btecho (alto|medio|de crack)/g,'nivel máximo $1'],[/olfato de gol/g,'facilidad para meter goles'],
+ [/\badaptación\b/g,'acostumbrarte'],[/Golden Boy(?! \()/g,'Golden Boy (mejor joven)'],[/Mediapunta(?! \()/g,'Mediapunta (el 10)'],[/fútbol vertical/g,'fútbol de ir rápido al arco'],[/línea de pase/g,'camino para pasar el balón'],[/Falso extremo(?! \()/g,'Falso extremo (lateral que ataca)']];
+function ezText(root){if(DF()!==0||!root)return;const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentNode&&n.parentNode.nodeName;return p==='SCRIPT'||p==='STYLE'||p==='TEXTAREA'?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT}});
+ let n;while((n=w.nextNode())){let t=n.nodeValue,o=t;for(const [re,rep] of EZW)t=t.replace(re,rep);if(t!==o)n.nodeValue=t}}
+try{new MutationObserver(ms=>{if(DF()!==0)return;for(const m of ms){if(m.type==='characterData')continue;m.addedNodes.forEach(x=>{if(x.nodeType===3){ezText(x.parentNode)}else if(x.nodeType===1)ezText(x)})}}).observe(document.body,{childList:true,subtree:true})}catch(e){}
 function boot(d){if(d&&d.S){S=d.S;restoreClubs()}migrate();render()}
 window.claude?.hot?.snapshot?.(()=>({S}));
 window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});
