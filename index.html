@@ -58,6 +58,15 @@ button{font:inherit;color:inherit}
 .btn:hover{filter:brightness(1.07)}
 .btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line)}
 .btn.small{padding:8px 14px;font-size:15px}
+.rk{position:fixed;inset:0;z-index:900;background:rgba(4,7,14,.72);display:flex;align-items:center;justify-content:center;padding:16px}
+.rk-card{background:var(--surface);color:var(--ink);border:2px solid var(--line);border-radius:14px;padding:20px;width:min(100%,440px);max-height:86vh;overflow:auto;display:flex;flex-direction:column;gap:12px}
+.rk-card h2{margin:0;font-family:var(--f-display);text-transform:uppercase}
+.rk-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.rk-list li{display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:8px;background:var(--sunk)}
+.rk-list li.me{outline:2px solid var(--gold)}
+.rk-pos{font-family:var(--f-display);font-weight:800;font-size:20px;width:28px;text-align:center}
+.rk-name{flex:1;min-width:0;overflow-wrap:anywhere;font-weight:600}
+.rk-pts{font-variant-numeric:tabular-nums}
 .a3d{position:fixed;inset:0;z-index:1000;background:rgba(4,7,14,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:calc(env(safe-area-inset-top,0px) + 12px) 12px calc(env(safe-area-inset-bottom,0px) + 12px)}
 .a3d-stage{position:relative;width:min(100%,1100px,calc((100vh - 110px)*16/9));aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000}
 @media (max-aspect-ratio:1/1){.a3d-stage{width:100%;aspect-ratio:auto;height:min(74vh,150vw)}}
@@ -1156,7 +1165,7 @@ const CN_N=['brasileño','argentino','francés','español','inglés','portugués
 function genCompetitor(){const p=S.p,c=CL[p.club];if(R()>.75){S.sm.comp=null;return}
  S.sm.comp={n:pick(CN_F)+' '+pick(CN_L),nat:pick(CN_N),ovr:clamp(round(c.s+rnd(-4,7)),45,180)}}
 function startSeason(){const p=S.p;p.pol=clamp((p.pol||1)-8,1,100);S.sm={growth:0,inj:0,goal:1,miss:0,cupWin:null,winterWish:false,used:[],halves:[],roles:[],imp:0,focus:null,saudi:S.sm&&S.sm.saudi&&false};
- S.cont=contFor(p.club);genCompetitor();S.sm.dry=['ESP','ENG'].includes(CL[p.club].l)&&p.pos!=='POR'&&R()<.35;if(p.carryMiss){S.sm.miss+=p.carryMiss;p.carryMiss=0}curEntry();if(natEvent())return;show('pre')}
+ S.minDiff=Math.min(S.minDiff!=null?S.minDiff:DF(),DF());S.cont=contFor(p.club);genCompetitor();if(p.club!==S.rkClub){S.rkClub=p.club;setTimeout(rankingShow,60)}else rkPush();S.sm.dry=['ESP','ENG'].includes(CL[p.club].l)&&p.pos!=='POR'&&R()<.35;if(p.carryMiss){S.sm.miss+=p.carryMiss;p.carryMiss=0}curEntry();if(natEvent())return;show('pre')}
 function natEvent(){const p=S.p;if(p.natRoll||p.age<16)return false;p.natRoll=1;if(S.nt.debut||R()>=.45)return false;
  const alts=Object.keys(NAT).filter(n=>NAT[n].s>NAT[p.nat].s);if(!alts.length)return false;show('nacion',{alt:alts[ri(0,alts.length-1)],who:['abuela','abuelo','madre','padre'][ri(0,3)]});return true}
 function retire(forced){S.retired={y:S.year,age:S.p.age,forced:!!forced};try{archiveCareer('retiro')}catch(e){}news(`Retiro a los ${S.p.age} años.`);show('end')}
@@ -1389,6 +1398,7 @@ function rollCanteras(nat){const cl=CLUBS.filter(c=>L[BASE_L[c.n]].c===nat).sort
 function startView(){if(!CANT.list.length)rollCanteras('Colombia');
  return `<div style="display:flex;flex-direction:column;gap:24px"><div class="start"><section class="panel"><h2>Crea a tu jugador</h2><p class="note">Tienes 15 años y firmas tu primer contrato profesional.</p>
  <form class="form" id="f">
+  <label class="full">Usuario para el ranking en línea<input id="rkuser" placeholder="Ej. agusblox (siempre el mismo)" maxlength="20" autocomplete="off"></label>
   <label class="full">Nombre<input id="name" value="" placeholder="Escribe el nombre de tu jugador" maxlength="28" autocomplete="off"><span id="name-err" class="err" hidden>Ponle un nombre a tu jugador para empezar.</span></label>
   <label>País<select id="nat">${Object.keys(NAT).map(n=>`<option${n===CANT.nat?' selected':''}>${n}</option>`).join('')}</select></label>
   <label>Posición<select id="pos">${Object.entries(POS).map(([k,v])=>`<option value="${k}"${k==='DC'?' selected':''}>${k} · ${v.n}</option>`).join('')}</select></label>
@@ -1409,7 +1419,7 @@ function cantsHTML(){const pr=PROFILES[document.getElementById('prof').value];
   return `<button type="button" class="cant t${i}" data-c="${i}" aria-pressed="${CANT.sel===i}"><div class="top"><span>${T.k}</span><b>${c.s}</b></div>
   <div class="bd"><div class="cn"><span class="ctag big">${crest(n,36)}<span>${esc(n)}</span></span></div><div class="note">${L[BASE_L[n]].n}</div><div>${roleChip(rk)}</div>
   <ul><li>Progresión ${T.pot?'+'+T.pot*10+'%':'normal'}</li><li>Salario juvenil ${fmtM(salaryFor(pr.ovr,15,c)*.6)}/año</li></ul><p class="note" style="margin:0">${T.txt}</p></div></button>`}).join('')}
-function newGame(){const v=k=>document.getElementById(k).value;const pr=PROFILES[v('prof')];resetClubs();
+function newGame(){const v=k=>document.getElementById(k).value;{const ru=document.getElementById('rkuser');if(ru&&ru.value.trim())rkSetUser(ru.value)}const pr=PROFILES[v('prof')];resetClubs();
  const prod=R()<.01,barca=prod&&NAT[v('nat')]&&NAT[v('nat')].cf==='EU';
  const c=barca?CL['FC Barcelona']:CL[CANT.list[CANT.sel]],T=TIERS[barca?0:CANT.sel];
  const p={name:(v('name')||'Jugador').trim().slice(0,28),nat:v('nat'),pos:v('pos'),latRole:v('lat'),foot:v('foot'),num:clamp(+v('num')||9,1,99),age:15,
@@ -1483,7 +1493,7 @@ function histHTML(){const hist=loadHist();if(!hist.length)return'';
 /* ---------- render ---------- */
 const app=document.getElementById('app');
 function render(){
- if(!S||!S.p){godMode(false);galaxy(false);app.innerHTML=startView();
+ if(!S||!S.p){godMode(false);galaxy(false);app.innerHTML=startView();{const ru=document.getElementById('rkuser');if(ru){ru.value=rkUser();if(!FB_URL)ru.closest('label').hidden=true}}
   const box=document.getElementById('cants'),fb=document.getElementById('flagbox');
   const up=()=>{box.innerHTML=cantsHTML();fb.innerHTML=flagHTML(CANT.nat);box.querySelectorAll('.cant').forEach(b=>b.onclick=()=>{CANT.sel=+b.dataset.c;up()})};up();
   document.getElementById('prof').addEventListener('change',up);
@@ -1572,6 +1582,28 @@ const EZW=[[/Definición y técnica/g,'Tiro y control del balón'],[/definición
 function ezText(root){if(DF()!==0||!root)return;const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentNode&&n.parentNode.nodeName;return p==='SCRIPT'||p==='STYLE'||p==='TEXTAREA'?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT}});
  let n;while((n=w.nextNode())){let t=n.nodeValue,o=t;for(const [re,rep] of EZW)t=t.replace(re,rep);if(t!==o)n.nodeValue=t}}
 try{new MutationObserver(ms=>{if(DF()!==0)return;for(const m of ms){if(m.type==='characterData')continue;m.addedNodes.forEach(x=>{if(x.nodeType===3){ezText(x.parentNode)}else if(x.nodeType===1)ezText(x)})}}).observe(document.body,{childList:true,subtree:true})}catch(e){}
+/* ---------- ranking en línea (Firebase Realtime Database) ---------- */
+const FB_URL='';
+const RK_USER='tfc-user';
+function rkUser(){try{return localStorage.getItem(RK_USER)||''}catch(e){return''}}
+function rkClean(u){return String(u||'').toLowerCase().replace(/[^a-z0-9_]/g,'').slice(0,20)}
+function rkSetUser(u){u=rkClean(u);try{localStorage.setItem(RK_USER,u)}catch(e){}return u}
+function careerPts(st){if(!st||!st.p)return 0;const por=st.p.pos==='POR';let pts=0;
+ (st.rows||[]).forEach(e=>{pts+=(e.g||0)+(e.a||0)*.5+(por?(e.cs||0):0)});
+ (st.trophies||[]).forEach(t=>{pts+=t.cat==='liga'?10:t.cat==='copa'?5:t.cat==='asc'?3:t.cat==='int'?(/Champions|Libertadores/.test(t.n)?25:10):t.cat==='sel'?(/Mundial/.test(t.n)?40:20):0});
+ (st.awards||[]).forEach(a=>{pts+=/^(Balón de Oro|Trofeo Yashin)$/.test(a.n)?50:/· 2º/.test(a.n)?15:/· 3º/.test(a.n)?10:5});
+ const md=st.minDiff!=null?st.minDiff:(st.diff!=null?st.diff:2);return Math.round(pts*[.7,.9,1,1][md])}
+function rkPush(){if(S&&S.p)S.minDiff=Math.min(S.minDiff!=null?S.minDiff:DF(),DF());if(!FB_URL||!rkUser()||!S||!S.cid)return Promise.resolve();
+ return fetch(`${FB_URL}/ranking/${rkUser()}/c/${S.cid}.json`,{method:'PUT',body:JSON.stringify(careerPts(S))}).catch(()=>{})}
+async function rkFetch(){const r=await fetch(`${FB_URL}/ranking.json`);if(!r.ok)throw new Error('http');const d=(await r.json())||{};
+ return Object.entries(d).map(([u,v])=>({u,pts:Object.values((v&&v.c)||{}).reduce((a,b)=>a+(+b||0),0)})).sort((a,b)=>b.pts-a.pts)}
+function rkBox(){let el=document.getElementById('rk');if(el)return el;el=document.createElement('div');el.id='rk';el.className='rk';el.hidden=true;el.setAttribute('role','dialog');el.setAttribute('aria-labelledby','rk-h');
+ el.innerHTML='<div class="rk-card"><h2 id="rk-h">Ranking en línea</h2><p class="note" id="rk-sub"></p><ol class="rk-list" id="rk-list"></ol><button class="btn" id="rk-go" type="button">Seguir</button></div>';
+ document.body.appendChild(el);el.querySelector('#rk-go').onclick=()=>{el.hidden=true};return el}
+function rankingShow(){if(!FB_URL||!rkUser()||window.__NO3D)return;const el=rkBox(),me=rkUser(),list=el.querySelector('#rk-list');
+ el.querySelector('#rk-sub').textContent=`Nuevo club: ${S.p.club}. Puntos sumando todas tus carreras (Fácil −30%, Normal −10%).`;list.innerHTML='<li class="note">Cargando…</li>';el.hidden=false;
+ rkPush().then(rkFetch).then(rows=>{list.innerHTML=rows.length?rows.slice(0,30).map((x,i)=>`<li class="${x.u===me?'me':''}"><span class="rk-pos">${i+1}</span><span class="rk-name">${esc(x.u)}</span><b class="rk-pts">${x.pts.toLocaleString('es-CO')}</b></li>`).join(''):'<li class="note">Todavía no hay jugadores.</li>'})
+  .catch(()=>{list.innerHTML='<li class="note">No se pudo conectar al ranking. Funciona en el link de GitHub con internet.</li>'})}
 /* ---------- animaciones 3D (gala, penal, entrenamiento) ---------- */
 const A3D_KEY='tfc-3d';
 function a3dOn(){try{return localStorage.getItem(A3D_KEY)!=='0'}catch(e){return true}}
