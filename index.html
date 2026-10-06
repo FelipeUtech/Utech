@@ -1583,7 +1583,7 @@ function ezText(root){if(DF()!==0||!root)return;const w=document.createTreeWalke
  let n;while((n=w.nextNode())){let t=n.nodeValue,o=t;for(const [re,rep] of EZW)t=t.replace(re,rep);if(t!==o)n.nodeValue=t}}
 try{new MutationObserver(ms=>{if(DF()!==0)return;for(const m of ms){if(m.type==='characterData')continue;m.addedNodes.forEach(x=>{if(x.nodeType===3){ezText(x.parentNode)}else if(x.nodeType===1)ezText(x)})}}).observe(document.body,{childList:true,subtree:true})}catch(e){}
 /* ---------- ranking en línea (Firebase Realtime Database) ---------- */
-const FB_URL='';
+const FB_URL='https://trayectoria-fc-3f762-default-rtdb.firebaseio.com';
 const RK_USER='tfc-user';
 function rkUser(){try{return localStorage.getItem(RK_USER)||''}catch(e){return''}}
 function rkClean(u){return String(u||'').toLowerCase().replace(/[^a-z0-9_]/g,'').slice(0,20)}
