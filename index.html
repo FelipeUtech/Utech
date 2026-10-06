@@ -1004,7 +1004,7 @@ function scene(){const p=S.p,st=S.step,club=CL[p.club];let sc;
    choices:ev.o.map(o=>({l:o.l,d:o.d,f:()=>{const [t,ch]=o.f(p);show('result',{title:ev.t,t,ch,next:st.data.next})}}))};break}
  case 'ruleta':{const d=st.data;
   sc={kicker:label()+' · Ruleta de la temporada',title:d.res==null?'Gira la ruleta':d.seg.n,
-   body:d.res==null?`<p>El fútbol también es suerte. Gira la ruleta y descubre qué te depara esta temporada. Las porciones más grandes son más probables y cambian según tu edad, tu moral, tu relación con el DT y si estás lejos de casa.</p>${wheelSVG(d.segs)}<div><button class="btn" id="spin">Girar la ruleta</button></div>`:
+   body:d.res==null?`<p>Gira la ruleta: las porciones grandes son más probables.</p>${wheelSVG(d.segs)}<div><button class="btn" id="spin">Girar la ruleta</button></div>`:
     `${wheelSVG(d.segs,d.rot)}<p>${d.out.t}</p>${chipsHTML(d.out.ch)}`,
    choices:d.res==null?[]:[{l:'Seguir',f:()=>go(d.next)}]};break}
  case 'trivia':{const d=st.data,q=TRIVIA[d.i];if(true){setTimeout(()=>go(d.next||'h2'),0);sc={kicker:label(),title:'Continuando…',body:'',choices:[]};break}
@@ -1103,7 +1103,7 @@ function pickEvent(){const p=S.p;const el=EVENTS.filter(e=>(!e.w||e.w(p))&&!S.sm
 function nextAfterPre(){show('event',{id:pickEvent(),next:'h1'})}
 function preDone(t,ch){show('result',{title:'Pretemporada',t,ch,next:'evA'});const f=S.sm.focus,v=f==='fisico'||f==='doble'?'fisico':f==='tecnica'?(S.p.pos==='POR'?'portero':'tecnica'):null;if(v)anim3d('train',v)}
 function go(k){if(k==='pre'){show('pre');return}if(k==='season'){nextSeason();return}
- if(k==='evA'){const newClub=S.rows.filter(r=>r.club===S.p.club).length<=1;if((newClub||R()<.3)&&!S.sm.intDone){S.sm.intDone=1;interviewStart('wheel');return}go('wheel');return}
+ if(k==='evA'){go('wheel');return}
  if(k==='wheel'){if(!S.sm.wheelDone){S.sm.wheelDone=1;show('ruleta',{segs:wheelSegs(),res:null,next:'evA2'});return}go('evA2');return}
  if(k==='evA2'){nextAfterPre();return}if(k==='h1'){halfSim(0);show('half',{h:0})}else if(k==='h2'){halfSim(1);show('half',{h:1})}else if(k==='evB'){show('event',{id:pickEvent(),next:'h2'})}}
 function midDecision(){const p=S.p;
@@ -1365,10 +1365,10 @@ function endView(){const p=S.p;const rows=S.rows;const T=rows.reduce((s,e)=>({pj
 const PROFILES={precoz:{n:'Promesa precoz',d:'Arrancas con más nivel, techo alto',ovr:61,pot:[78,86],prof:55},
  diamante:{n:'Diamante en bruto',d:'Arrancas más abajo, techo de crack',ovr:56,pot:[82,91],prof:50},
  obrero:{n:'Trabajador',d:'Disciplina de hierro, techo medio',ovr:59,pot:[76,84],prof:78}};
-const TIERS=[{k:'Cantera grande',pot:4,prof:4,mor:0,txt:'Formación de élite y vitrina. Más potencial, pero compites con fichajes caros: casi no vas a jugar al principio.'},
- {k:'Cantera mediana',pot:2,prof:2,mor:2,txt:'Equilibrio entre buena formación y opciones reales de debutar: al menos suplente hasta los 18.'},
- {k:'Cantera pequeña',pot:0,prof:0,mor:6,txt:'Menos recursos y menos vitrina, pero rotación asegurada desde el primer año hasta los 18.'},
- {k:'Club extranjero',pot:2,prof:2,mor:-4,txt:'¡Un club de otro país apuesta por ti! Te vas lejos de casa y te cuesta adaptarte, pero tienes rotación asegurada hasta los 18 en una liga top.'}];
+const TIERS=[{k:'Cantera grande',pot:4,prof:4,mor:0,txt:'Mucho talento, pero casi no juegas al principio.'},
+ {k:'Cantera mediana',pot:2,prof:2,mor:2,txt:'Al menos suplente hasta los 18.'},
+ {k:'Cantera pequeña',pot:0,prof:0,mor:6,txt:'Rotación asegurada hasta los 18.'},
+ {k:'Club extranjero',pot:2,prof:2,mor:-4,txt:'¡Un club de otro país apuesta por ti! Rotación en una liga top, lejos de casa.'}];
 let CANT={nat:'Colombia',list:[],sel:2};
 function rollCanteras(nat){const cl=CLUBS.filter(c=>L[BASE_L[c.n]].c===nat).sort((a,b)=>b.s-a.s);const n=cl.length;
  const top=cl[ri(0,Math.min(2,n-1))];let mid,low;
@@ -1390,7 +1390,7 @@ function startView(){if(!CANT.list.length)rollCanteras('Colombia');
   <label class="full">Perfil<select id="prof">${Object.entries(PROFILES).map(([k,v])=>`<option value="${k}">${v.n}: ${v.d}</option>`).join('')}</select></label>
  </form></section>
  <section class="panel"><h2>Cómo funciona</h2><div id="flagbox"></div>
- <ul class="rules" style="margin-top:14px"><li>Juegas según tu media frente al nivel del club. Nadie te regala minutos.</li><li>Los goles dependen de tus minutos, tu posición y el nivel de la liga. Un 9 titular siempre marca.</li><li>Cantera grande: más potencial, menos minutos. Cantera pequeña: rotación asegurada hasta los 18, pero con menos vitrina. Cantera mediana: al menos suplente. Club extranjero: rotación en una liga top, lejos de casa.</li><li>5 o 6 decisiones por temporada: pretemporada, vida personal, lesiones y mercados de invierno y verano.</li><li>Ascensos, descensos, copas, Libertadores, Champions, selección y Mundiales.</li></ul>
+ <ul class="rules" style="margin-top:14px"><li>Juegas según tu media frente al nivel del club.</li><li>Cantera grande: más talento, menos minutos. Cantera pequeña: juegas desde ya.</li><li>Cada temporada tomas 5 o 6 decisiones.</li></ul>
  <p class="note" style="margin-top:14px">Niveles de clubes aproximados a 2026. Juego de fans sin relación con los clubes.</p></section></div>
  <section class="panel"><div class="cants-head"><div><h2 class="sec-h">Elige tu cantera</h2><p class="note" style="margin:0">Tres clubes de ${esc(CANT.nat)} quieren ficharte, y uno de otro país apuesta por ti.</p></div><button class="btn ghost small" type="button" id="reroll">Ver otras canteras</button></div>
  <div class="cants" id="cants" style="margin-top:16px"></div></section>
