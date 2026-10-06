@@ -1598,7 +1598,8 @@ function careerPts(st){if(!st||!st.p)return 0;const por=st.p.pos==='POR';let pts
  const md=st.minDiff!=null?st.minDiff:(st.diff!=null?st.diff:2);return Math.round(pts*[.7,.9,1,1][md])}
 function rkPush(){if(S&&S.p)S.minDiff=Math.min(S.minDiff!=null?S.minDiff:DF(),DF());if(!FB_URL||!rkUser()||!S||!S.cid)return Promise.resolve();
  return fetch(`${FB_URL}/ranking/${rkUser()}/c/${S.cid}.json`,{method:'PUT',body:JSON.stringify(careerPts(S))}).catch(()=>{})}
-async function rkFetch(){const r=await fetch(`${FB_URL}/ranking.json`);if(!r.ok)throw new Error('http');const d=(await r.json())||{};
+function rkGet(url,ms){return new Promise((ok,ko)=>{const c=typeof AbortController!=='undefined'?new AbortController():null;const t=setTimeout(()=>{if(c)c.abort();ko(new Error('tiempo'))},ms);fetch(url,c?{signal:c.signal,cache:'no-store'}:{cache:'no-store'}).then(r=>{clearTimeout(t);ok(r)},e=>{clearTimeout(t);ko(e)})})}
+async function rkFetch(){let r,last;for(let i=0;i<3;i++){try{r=await rkGet(`${FB_URL}/ranking.json`,9000);break}catch(e){last=e;await new Promise(z=>setTimeout(z,1200))}}if(!r)throw last||new Error('red');if(!r.ok)throw new Error('código '+r.status);const d=(await r.json())||{};
  return Object.entries(d).map(([u,v])=>({u,pts:Object.values((v&&v.c)||{}).reduce((a,b)=>a+(+b||0),0)})).sort((a,b)=>b.pts-a.pts)}
 function rkBox(){let el=document.getElementById('rk');if(el)return el;el=document.createElement('div');el.id='rk';el.className='rk';el.hidden=true;el.setAttribute('role','dialog');el.setAttribute('aria-labelledby','rk-h');
  el.innerHTML='<div class="rk-card"><h2 id="rk-h">Ranking en línea</h2><p class="note" id="rk-sub"></p><ol class="rk-list" id="rk-list"></ol><button class="btn" id="rk-go" type="button">Seguir</button></div>';
@@ -1606,7 +1607,7 @@ function rkBox(){let el=document.getElementById('rk');if(el)return el;el=documen
 function rankingShow(manual){if(!FB_URL||!rkUser()||(window.__NO3D&&!manual))return;const el=rkBox(),me=rkUser(),list=el.querySelector('#rk-list');
  el.querySelector('#rk-sub').textContent=`${manual||!S||!S.p?'':'Nuevo club: '+S.p.club+'. '}Puntos sumando todas tus carreras (Fácil −30%, Normal −10%).`;list.innerHTML='<li class="note">Cargando…</li>';el.hidden=false;
  rkPush().then(rkFetch).then(rows=>{list.innerHTML=rows.length?rows.slice(0,30).map((x,i)=>`<li class="${x.u===me?'me':''}"><span class="rk-pos">${i+1}</span><span class="rk-name">${esc(x.u)}</span><b class="rk-pts">${x.pts.toLocaleString('es-CO')}</b></li>`).join(''):'<li class="note">Todavía no hay jugadores.</li>'})
-  .catch(()=>{list.innerHTML='<li class="note">No se pudo conectar al ranking. Funciona en el link de GitHub con internet.</li>'})}
+  .catch(e=>{list.innerHTML=`<li class="note">No se pudo conectar al ranking (${esc(String(e&&e.message||e).slice(0,60))}). Revisa tu señal y toca Reintentar.</li><li><button class="btn ghost small" type="button" id="rk-retry">Reintentar</button></li>`;const b=document.getElementById('rk-retry');if(b)b.onclick=()=>rankingShow(manual)})}
 /* ---------- animaciones 3D (gala, penal, entrenamiento) ---------- */
 const A3D_KEY='tfc-3d';
 function a3dOn(){try{return localStorage.getItem(A3D_KEY)!=='0'}catch(e){return true}}
