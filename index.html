@@ -449,9 +449,9 @@ function fx(d){const p=S.p,chips=[];
 /* ---------- eventos ---------- */
 const EVENTS=[
 {id:'estudio',w:p=>p.age<=18&&!S.studyDone&&(S.studyNo||0)<2,t:'Tu mamá quiere que estudies',x:p=>`Tu mamá te sienta en la mesa de la cocina: "El fútbol es muy bonito, mijo, pero primero el colegio". Quiere que termines el bachillerato${S.studyNo?' y esta vez no piensa ceder':''}. Las clases de la tarde chocan con los entrenamientos.`,
- o:[{l:'Hacerle caso y estudiar',d:'Sin entrenamiento esta temporada: casi no mejoras',f:()=>{S.studyDone=1;news('Dejaste los entrenamientos de la tarde para terminar el colegio.');return['Te pones juicioso con el colegio y faltas a los entrenamientos de la tarde. Tu mamá está feliz, pero tu cuerpo lo nota: esta temporada no entrenas.',[{t:'Sin entrenamiento',c:'bad'}].concat(fx({growth:-1.2,morale:6,prof:6}))]}},
-  {l:'Estudiar de noche y entrenar de día',d:'Mejoras un poco menos y te cansas',f:()=>{S.studyDone=1;return['Clases a las 7 p. m., tareas hasta medianoche y entrenamiento a las 8 a. m. Cumples con las dos cosas, pero vas cansado.',fx({growth:-.4,inj:.03,prof:4,morale:-2})]}},
-  {l:'Decirle que no: solo fútbol',d:'Tu mamá se enoja',f:()=>{S.studyNo=(S.studyNo||0)+1;return['Le dices que vas a ser futbolista sí o sí. Tu mamá no te habla en una semana.',fx({morale:-10,growth:.2})]}}]},
+ o:[{l:'Hacerle caso y estudiar',d:'Sin entrenamiento esta temporada: casi no mejoras',f:()=>{S.studyDone=1;anim3d('estudio','estudiar');news('Dejaste los entrenamientos de la tarde para terminar el colegio.');return['Te pones juicioso con el colegio y faltas a los entrenamientos de la tarde. Tu mamá está feliz, pero tu cuerpo lo nota: esta temporada no entrenas.',[{t:'Sin entrenamiento',c:'bad'}].concat(fx({growth:-1.2,morale:6,prof:6}))]}},
+  {l:'Estudiar de noche y entrenar de día',d:'Mejoras un poco menos y te cansas',f:()=>{S.studyDone=1;anim3d('estudio','noche');return['Clases a las 7 p. m., tareas hasta medianoche y entrenamiento a las 8 a. m. Cumples con las dos cosas, pero vas cansado.',fx({growth:-.4,inj:.03,prof:4,morale:-2})]}},
+  {l:'Decirle que no: solo fútbol',d:'Tu mamá se enoja',f:()=>{S.studyNo=(S.studyNo||0)+1;anim3d('estudio','no');return['Le dices que vas a ser futbolista sí o sí. Tu mamá no te habla en una semana.',fx({morale:-10,growth:.2})]}}]},
 {id:'fiesta',t:'Fiesta antes del clásico',x:p=>`Faltan dos días para el clásico y tres compañeros te invitan a una fiesta en la casa de un cantante. Van a ir hinchas del club con el celular en la mano.`,
  o:[{l:'Ir un rato y volver temprano',d:'Algo de riesgo',f:()=>R()<.35?['Alguien subió un video tuyo a las 2 a. m. El DT te dejó en el banco en el clásico.',fx({coach:-12,morale:4,miss:.04})]:['Te fuiste a las 11 p. m. y nadie dijo nada. El grupo te ve como uno más.',fx({morale:8,coach:1})]},
   {l:'Quedarte en casa',d:'Descanso y concentración',f:()=>['Dormiste nueve horas y llegaste al clásico a tope.',fx({prof:4,coach:3,morale:-2})]},
@@ -1577,7 +1577,7 @@ const lerp=(a,b,u)=>a+(b-a)*u, cl=(x,a,b)=>Math.max(a,Math.min(b,x));
 const ez=u=>u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
 const seg=(t,a,b)=>cl((t-a)/(b-a),0,1);
 const V=(x,y,z)=>new T.Vector3(x,y,z);
-function M(c,o){return new T.MeshStandardMaterial(Object.assign({color:c,roughness:.72,metalness:0,flatShading:true},o||{}))}
+function M(c,o){const m=new T.MeshStandardMaterial(Object.assign({roughness:.72,metalness:0,flatShading:true},o||{}));m.color.set(c).convertSRGBToLinear();return m}
 function mesh(g,m,sh){const x=new T.Mesh(g,m);x.castShadow=sh!==false;x.receiveShadow=true;return x}
 const cyl=(a,b,h,m,s)=>mesh(new T.CylinderGeometry(a,b,h,s||10),m);
 const sph=(r,m,s)=>mesh(new T.SphereGeometry(r,s||14,Math.max(8,((s||14)*.7)|0)),m);
@@ -1698,13 +1698,13 @@ function crowd(sc,o){ // gradas con público
   const n=Math.min(o.n||900,LITE?420:5000),body=new T.InstancedMesh(new T.BoxGeometry(.36,.5,.26),M('#ffffff'),n),head=new T.InstancedMesh(new T.SphereGeometry(.12,8,6),M('#ffffff'),n);
   const m4=new T.Matrix4(),col=new T.Color();let k=0;
   for(let r=0;r<o.rows&&k<n;r++){for(let c=0;c<o.cols&&k<n;c++){const p=o.place(r,c);m4.makeTranslation(p.x,p.y+.25,p.z);body.setMatrixAt(k,m4);m4.makeTranslation(p.x,p.y+.62,p.z);head.setMatrixAt(k,m4);
-    col.set(o.colors[(Math.random()*o.colors.length)|0]).multiplyScalar(.55+Math.random()*.5);body.setColorAt(k,col);col.set(['#c08a5f','#8d5a3b','#e0b48c','#5a3a26'][(Math.random()*4)|0]);head.setColorAt(k,col);k++}}
+    col.set(o.colors[(Math.random()*o.colors.length)|0]).convertSRGBToLinear().multiplyScalar(.55+Math.random()*.5);body.setColorAt(k,col);col.set(['#c08a5f','#8d5a3b','#e0b48c','#5a3a26'][(Math.random()*4)|0]).convertSRGBToLinear();head.setColorAt(k,col);k++}}
   body.count=head.count=k;body.instanceMatrix.needsUpdate=head.instanceMatrix.needsUpdate=true;sc.add(body,head);return{body,head,k}}
 
 /* ---------- confeti ---------- */
 function confetti(sc,cols,cx,cz){const n=REDUCED?80:LITE?140:320,g=new T.PlaneGeometry(.08,.05),m=new T.MeshBasicMaterial({side:T.DoubleSide,color:'#fff'});
   const im=new T.InstancedMesh(g,m,n);const P=[];const col=new T.Color();
-  for(let i=0;i<n;i++){P.push({x:cx+(Math.random()-.5)*9,y:4+Math.random()*5,z:cz+(Math.random()-.5)*6,v:.8+Math.random()*.9,r:Math.random()*6,s:Math.random()*4});col.set(cols[i%cols.length]);im.setColorAt(i,col)}
+  for(let i=0;i<n;i++){P.push({x:cx+(Math.random()-.5)*9,y:4+Math.random()*5,z:cz+(Math.random()-.5)*6,v:.8+Math.random()*.9,r:Math.random()*6,s:Math.random()*4});col.set(cols[i%cols.length]).convertSRGBToLinear();im.setColorAt(i,col)}
   im.visible=false;sc.add(im);const o=new T.Object3D();
   return{im,step(dt,on){im.visible=on;if(!on)return;P.forEach((p,i)=>{p.y-=p.v*dt;p.r+=dt*p.s;if(p.y<0){p.y=6+Math.random()*2}o.position.set(p.x+Math.sin(p.r)*.25,p.y,p.z+Math.cos(p.r*.7)*.2);o.rotation.set(p.r,p.r*.6,p.r*.3);o.updateMatrix();im.setMatrixAt(i,o.matrix)});im.instanceMatrix.needsUpdate=true}}}
 
@@ -1939,10 +1939,102 @@ function sceneTrain(L,variant){
 }
 
 
+/* =========================================================
+   ESCENA 4: TU MAMÁ QUIERE QUE ESTUDIES
+   ========================================================= */
+function sceneStudy(L,variant){
+  const night=variant==='noche';
+  const sc=new T.Scene();sc.background=new T.Color(night?'#0b1020':'#d9c7ad');
+  const cam=new T.PerspectiveCamera(46,1,.1,40);
+  sc.add(new T.HemisphereLight(night?'#5a6aa8':'#fff4e0',night?'#1a1410':'#6b5a45',night?.28:.75));
+  const sun=new T.DirectionalLight(night?'#8fa6ff':'#fff1d6',night?.25:1.0);sun.position.set(-3,5,4);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);
+  const sh=sun.shadow.camera;sh.left=-4;sh.right=4;sh.top=4;sh.bottom=-4;sc.add(sun);
+  // cocina
+  const wood=canvasTex(256,256,(x,W,H)=>{for(let i=0;i<8;i++){x.fillStyle=i%2?'#9a6b43':'#a8774c';x.fillRect(0,i*H/8,W,H/8)}x.strokeStyle='rgba(60,35,15,.35)';for(let i=0;i<40;i++){x.beginPath();const y=Math.random()*H;x.moveTo(0,y);x.bezierCurveTo(W*.3,y+6,W*.6,y-6,W,y+3);x.stroke()}});
+  wood.wrapS=wood.wrapT=T.RepeatWrapping;wood.repeat.set(4,4);
+  const floor=mesh(new T.PlaneGeometry(10,10),new T.MeshStandardMaterial({map:wood,roughness:.8}),false);floor.rotation.x=-Math.PI/2;sc.add(floor);
+  const wallM=M(night?'#3a3550':'#e8d9bf',{flatShading:false});
+  const wb=mesh(new T.PlaneGeometry(10,3.2),wallM,false);wb.position.set(0,1.6,-2.2);sc.add(wb);
+  const wl=mesh(new T.PlaneGeometry(10,3.2),wallM,false);wl.position.set(-2.6,1.6,0);wl.rotation.y=Math.PI/2;sc.add(wl);
+  // ventana
+  const win=new T.Mesh(new T.PlaneGeometry(1.3,1),new T.MeshBasicMaterial({map:canvasTex(256,200,(x,W,H)=>{
+    const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,night?'#0a1030':'#8fc7ff');g.addColorStop(1,night?'#1d2550':'#d8eeff');x.fillStyle=g;x.fillRect(0,0,W,H);
+    if(night){x.fillStyle='#fff7d6';x.beginPath();x.arc(W*.72,H*.3,18,0,7);x.fill();x.fillStyle='#fff';for(let i=0;i<25;i++)x.fillRect(Math.random()*W,Math.random()*H*.7,2,2)}
+    else{x.fillStyle='#fff';x.beginPath();x.arc(60,60,22,0,7);x.arc(85,55,26,0,7);x.arc(110,62,20,0,7);x.fill()}
+    x.fillStyle='#f4f0e6';x.fillRect(W/2-4,0,8,H);x.fillRect(0,H/2-4,W,8);x.lineWidth=14;x.strokeStyle='#f4f0e6';x.strokeRect(0,0,W,H)})}));
+  win.position.set(.9,1.7,-2.19);sc.add(win);
+  // nevera y mesón
+  const fr=box(.8,1.9,.7,M('#dfe4ea',{roughness:.4}));fr.position.set(-2.1,.95,-1.75);sc.add(fr);
+  const cnt=box(1.8,.9,.6,M('#7a8b99'));cnt.position.set(-.6,.45,-1.9);sc.add(cnt);const top=box(1.84,.05,.64,M('#efe7da'));top.position.set(-.6,.92,-1.9);sc.add(top);
+  // reloj de pared
+  const clockT=canvasTex(128,128,(x)=>{x.fillStyle='#fffaf0';x.beginPath();x.arc(64,64,60,0,7);x.fill();x.lineWidth=6;x.strokeStyle='#333';x.stroke();x.lineCap='round';
+    const hand=(a,l,w)=>{x.lineWidth=w;x.beginPath();x.moveTo(64,64);x.lineTo(64+Math.sin(a)*l,64-Math.cos(a)*l);x.stroke()};
+    if(night){hand(Math.PI*2*(11.97/12),30,6);hand(Math.PI*2*(58/60),46,4)}else{hand(Math.PI*2*(3.5/12),30,6);hand(Math.PI*2*(30/60),46,4)}});
+  const clk=new T.Mesh(new T.CircleGeometry(.22,24),new T.MeshBasicMaterial({map:clockT}));clk.position.set(-.9,2.3,-2.18);sc.add(clk);
+  // mesa y silla
+  const tm=M('#8b5a2b');const tbl=box(1.5,.06,.85,tm);tbl.position.set(0,.76,0);sc.add(tbl);
+  [[-.68,-.36],[.68,-.36],[-.68,.36],[.68,.36]].forEach(([x,z])=>{const l=box(.06,.74,.06,tm);l.position.set(x,.37,z);sc.add(l)});
+  const ch=new T.Group();const seat=box(.5,.05,.5,M('#6d4524'));seat.position.y=.48;ch.add(seat);const bk=box(.5,.6,.05,M('#6d4524'));bk.position.set(0,.8,-.24);ch.add(bk);
+  [[-.22,-.22],[.22,-.22],[-.22,.22],[.22,.22]].forEach(([x,z])=>{const l=box(.04,.48,.04,M('#6d4524'));l.position.set(x,.24,z);ch.add(l)});
+  ch.position.set(0,0,-.62);sc.add(ch);
+  // libros, cuaderno, lápiz
+  const books=new T.Group();['#c0392b','#2e86de','#27ae60','#f39c12'].forEach((c,i)=>{const b=box(.32,.06,.24,M(c));b.position.set(-.5,.82+i*.062,.05);b.rotation.y=(i-1.5)*.12;books.add(b)});sc.add(books);
+  const nb=mesh(new T.PlaneGeometry(.42,.3),new T.MeshStandardMaterial({map:canvasTex(256,180,(x,W,H)=>{x.fillStyle='#fdfcf7';x.fillRect(0,0,W,H);x.strokeStyle='#9cc3e6';x.lineWidth=2;for(let y=24;y<H;y+=16){x.beginPath();x.moveTo(0,y);x.lineTo(W,y);x.stroke()}
+    x.strokeStyle='#e57373';x.beginPath();x.moveTo(30,0);x.lineTo(30,H);x.stroke();x.fillStyle='#2b3a55';x.font='18px Arial';['x² + 2x = 8','Biología: célula','Sociales: 1810'].forEach((t,i)=>x.fillText(t,40,38+i*32))})}),false);
+  nb.rotation.x=-Math.PI/2;nb.position.set(.05,.795,-.12);sc.add(nb);
+  const pen=cyl(.008,.008,.16,M('#f4c430'),6);pen.rotation.z=Math.PI/2;sc.add(pen);pen.visible=variant!=='no';
+  // lámpara
+  const lamp=new T.Group();const lb=cyl(.08,.1,.03,M('#2d2d2d'),12);lb.position.y=.81;lamp.add(lb);const la=cyl(.012,.012,.42,M('#2d2d2d'),6);la.position.y=1.02;lamp.add(la);
+  const ls=mesh(new T.ConeGeometry(.13,.16,14,1,true),M('#2a9d8f',{side:T.DoubleSide}));ls.position.set(0,1.22,.04);ls.rotation.x=.5;lamp.add(ls);lamp.position.set(.55,0,-.1);sc.add(lamp);
+  const bulb=new T.PointLight('#ffd27a',night?2.6:.5,3.2);bulb.position.set(.55,1.12,0);sc.add(bulb);
+  // personajes
+  const kit=L.kit;
+  const me=person({shirt:kit.shirt,sleeve:kit.sleeve,shorts:kit.shorts,socks:kit.socks,num:L.num,name:L.name,numColor:kit.num});
+  sc.add(me.root);
+  const mom=person({shirt:'#c2185b',sleeve:'#c2185b',shorts:'#34344a',socks:'#34344a',boots:'#4a2c2a',longPants:true,longSleeve:true,hair:'#2a1a12',skin:'#b98058'});
+  const bun=sph(.09,M('#2a1a12'));bun.position.set(0,.1,-.13);mom.head.add(bun);
+  
+  sc.add(mom.root);mom.root.visible=!night;
+  const ball=ballMesh();sc.add(ball);ball.visible=variant==='no';
+  const camPos=V(2.1,1.65,2.5),look=V(0,1,-.1);
+  function sit(P){P.root.position.set(0,0,-.6);P.root.rotation.y=0;P.hips.position.y=.56;legA(P,0,1.5,1.5);legA(P,1,1.5,1.5)}
+  function update(t,dt){
+    rest(me);rest(mom);
+    if(variant==='no'){
+      // jugando con el balón en la cocina
+      me.root.position.set(-.75,0,.6);me.root.rotation.y=Math.PI/2-.45;
+      const ph=t*4.2,up=Math.max(0,Math.sin(ph));legA(me,1,.15+.55*up,.35+.4*up);legA(me,0,-.05,.15);armA(me,0,.1,.3,.45);armA(me,1,.1,.3,.45);me.head.rotation.x=.35;
+      sc.updateMatrixWorld();const f=V(0,0,0);me.kn[1].children[1].getWorldPosition(f);
+      ball.position.set(f.x+.05,.35+Math.abs(Math.cos(ph/2))*.75,f.z+.12);ball.rotation.x+=dt*8;
+      // mamá de brazos cruzados, negando
+      mom.root.position.set(.75,0,.6);mom.root.rotation.y=-Math.PI/2+.45;
+      armA(mom,0,.45,1.7,-.12);armA(mom,1,.45,1.7,-.12);mom.el[0].rotation.order=mom.el[1].rotation.order='YXZ';mom.el[0].rotation.y=-.95;mom.el[1].rotation.y=.95;mom.head.rotation.y=Math.sin(t*7)*.32*(t%3<1.6?1:0);
+      cap(t<2.5?'Tu mamá quiere que estudies':t<5?'«¡Voy a ser futbolista sí o sí!»':'Tu mamá no te habla en una semana',t>=2.5&&t<5);
+    }else{
+      sit(me);
+      // escribiendo
+      const w=Math.sin(t*9);armA(me,1,1.05+.05*w,.75,-.15);armA(me,0,.95,1.1,-.3);me.spine.rotation.x=.32;me.head.rotation.x=.42;
+      sc.updateMatrixWorld();const h=V(0,0,0);me.hand[1].getWorldPosition(h);pen.position.set(h.x+.02,Math.max(.81,h.y-.02),h.z+.03);pen.rotation.y=.6;
+      if(night){ // sueño: cabeceo
+        const c=t%4,nod=c<2.6?ez(c/2.6)*.55:c<2.8?lerp(.55,0,(c-2.6)/.2):0;me.head.rotation.x=.42+nod;
+        cap(t<3?'Clases a las 7 p. m.':t<6?'Tareas hasta medianoche…':'Y mañana a entrenar a las 8 a. m.',false);
+      }else{
+        mom.root.position.set(-.95,0,.15);mom.root.rotation.y=1.9;
+        const c=Math.sin(t*10);if(t%4<1.4){armA(mom,0,1.1,1.1+.3*c,-.35);armA(mom,1,1.1,1.1-.3*c,-.35)}else{armA(mom,0,.2,.4,.1);armA(mom,1,.9,1.6,-.3)}
+        mom.head.rotation.x=Math.sin(t*3)*.08;
+        cap(t<3?'Primero el colegio':t<6?'Sin entrenamiento esta temporada':'Tu mamá está orgullosa',t>=6);
+      }
+    }
+    const a=Math.sin(t*.25)*.18;const cp=variant==='no'?V(.2+Math.sin(a)*.8,1.55,3.7):V(2.3*Math.cos(a)-.2,1.65,2.5+Math.sin(a)*.4),lk=V(0,variant==='no'?1:.95,variant==='no'?.5:-.2);
+    const k=cl(dt*2.5,0,1);camPos.lerp(cp,k);look.lerp(lk,k);cam.position.copy(camPos);cam.lookAt(look);
+  }
+  return{scene:sc,cam,update,dur:9,loopDur:9,tag:'Tu mamá quiere que estudies'};
+}
+
 function disposeScene(s){s.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){[].concat(o.material).forEach(m=>{if(m.map)m.map.dispose();m.dispose()})}})}
 function close(){ov.hidden=true;cancelAnimationFrame(raf);raf=0;if(cur){disposeScene(cur.scene);cur=null}document.documentElement.style.overflow=''}
 function start(){const [kind,variant,L]=lastArgs;if(cur)disposeScene(cur.scene);
- cur=kind==='gala'?sceneGala(L):kind==='penal'?scenePenal(L,variant):sceneTrain(L,variant);clock=0;capTxt='#';cap('');size();
+ cur=kind==='gala'?sceneGala(L):kind==='penal'?scenePenal(L,variant):kind==='estudio'?sceneStudy(L,variant):sceneTrain(L,variant);clock=0;capTxt='#';cap('');size();
  if(!raf){last=performance.now();raf=requestAnimationFrame(loop)}}
 ov.querySelector('[data-a=rep]').onclick=start;ov.querySelector('[data-a=skip]').onclick=close;
 addEventListener('keydown',e=>{if(!ov.hidden&&e.key==='Escape')close()});
