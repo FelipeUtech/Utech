@@ -291,7 +291,7 @@ td .lg{color:var(--muted);font-size:13px;display:block}
   <label>Nombre<input id="set-name" maxlength="28"></label>
   <label>Dorsal<input id="set-num" type="number" min="1" max="99"></label>
   <label id="set-latbox" hidden>Rol de lateral<select id="set-lat"><option value="extremo">Falso extremo</option><option value="defensa">Defensa lateral</option></select></label>
-  <label>Dificultad<select id="set-diff"><option value="0">Normal: para disfrutar la carrera</option><option value="1">Difícil: cuesta jugar, crecer y ganar</option><option value="2">Leyenda: solo para cracks de verdad</option></select></label>
+  <label>Dificultad<select id="set-diff"><option value="0">Fácil: para aprender, juegas más y creces más rápido</option><option value="1">Normal: para disfrutar la carrera</option><option value="2">Difícil: cuesta jugar, crecer y ganar</option><option value="3">Leyenda: solo para cracks de verdad</option></select></label>
   <p class="note" id="set-note" style="margin:0"></p>
   <div id="set-reset" class="reset-box" hidden><b>Reiniciar carrera</b><span class="note">Borra tu carrera actual y vuelves a crear un jugador desde cero.</span>
    <div class="row-actions"><button class="btn ghost small" id="set-reset-ask" type="button">Reiniciar carrera</button></div>
@@ -396,14 +396,14 @@ const ROLES={
  rotacion:{n:'Rotación',play:.64,start:.5,min:70,mor:0,imp:.4,grow:.4,cls:'warn'},
  suplente:{n:'Suplente',play:.4,start:.18,min:66,mor:-5,imp:.12,grow:-.2,cls:'bad'},
  reserva:{n:'Sin minutos',play:.1,start:.25,min:70,mor:-9,imp:0,grow:-.8,cls:'bad'}};
-let DIFF_START=1;const DF=()=>(S&&S.p&&S.diff!=null)?S.diff:DIFF_START;
-const DIFFS=[{n:'Normal',d:'Para disfrutar la carrera'},{n:'Difícil',d:'Cuesta jugar, crecer y ganar'},{n:'Leyenda',d:'Solo para cracks de verdad'}];
-function roleKey(p,club){let d=p.ovr-club.s+(p.coach-50)/20+(p.morale-60)/60-[0,1,2][DF()];if(typeof S!=='undefined'&&S&&S.p&&S.sm&&S.sm.comp&&club.n===S.p.club&&S.sm.comp.ovr>p.ovr)d-=3.5;if(p.age<=19)d-=1;if(p.age<=16)d-=1;if(p.ctier>=1&&club.n===p.cantera&&p.age<=18)d=Math.max(d,p.ctier>=2?-4.5:-8.5);
+let DIFF_START=2;const DF=()=>(S&&S.p&&S.diff!=null)?S.diff:DIFF_START;
+const DIFFS=[{n:'Fácil',d:'Para aprender: juegas más, creces más rápido y te lesionas menos'},{n:'Normal',d:'Para disfrutar la carrera'},{n:'Difícil',d:'Cuesta jugar, crecer y ganar'},{n:'Leyenda',d:'Solo para cracks de verdad'}];
+function roleKey(p,club){let d=p.ovr-club.s+(p.coach-50)/20+(p.morale-60)/60-[-1.5,0,1,2][DF()];if(typeof S!=='undefined'&&S&&S.p&&S.sm&&S.sm.comp&&club.n===S.p.club&&S.sm.comp.ovr>p.ovr)d-=3.5;if(p.age<=19)d-=1;if(p.age<=16)d-=1;if(p.ctier>=1&&club.n===p.cantera&&p.age<=18)d=Math.max(d,p.ctier>=2?-4.5:-8.5);
  return d>=3?'estrella':d>=-1.5?'titular':d>=-4.5?'rotacion':d>=-8.5?'suplente':'reserva'}
 function roleFor(p,club){return roleKey({...p,coach:50,morale:Math.max(60,p.morale)},club)}
 
 const effO=o=>o<=92?o:92+(o-92)*.12;
-function gf(o){const c=o<90?1:o<110?1-(o-90)/20*.25:o<130?.6:o<160?.3:.15;return c*[1,.7,.5][DF()]}
+function gf(o){const c=o<90?1:o<110?1-(o-90)/20*.25:o<130?.6:o<160?.3:.15;return c*[1.3,1,.7,.5][DF()]}
 function marketValue(ovr,age){ovr=effO(ovr);const af=age<=21?1.5:age<=25?1.2:age<=28?1:age<=30?.7:age<=32?.45:.25;return Math.pow(10,(ovr-50)/12)*5e4*af}
 function salaryFor(ovr,age,club){ovr=effO(ovr);const lg=L[club.l];let s=Math.pow(10,(ovr-55)/13)*2e4*lg.w;s*=clamp(1+(club.s-lgAvg(club.l))*.03,.8,1.35);if(age<=19)s*=.6;return round(s/1000)*1000}
 function seasonLabel(y,lid){return L[lid].eu?`${y}/${String((y+1)%100).padStart(2,'0')}`:`${y}`}
@@ -700,7 +700,7 @@ function contFor(clubName){const c=CL[clubName],lg=L[c.l];if(!lg.cf)return null;
 function seasonGames(club){const lg=L[club.l];return lg.g+(lg.cup?lg.cupG:0)+(S.cont?S.cont.g:0)}
 
 function simLeague(lid,clubName,impact,sd){return byLeague(lid).map(c=>({c,v:c.s+gauss()*sd+(c.n===clubName?impact:0)})).sort((a,b)=>b.v-a.v).map(x=>x.c.n)}
-function impactOf(p,club,rk){return [1,.7,.5][DF()]*ROLES[rk].imp*clamp((p.ovr-club.s)*.25+.4,-.5,3)}
+function impactOf(p,club,rk){return [1.3,1,.7,.5][DF()]*ROLES[rk].imp*clamp((p.ovr-club.s)*.25+.4,-.5,3)}
 
 function newEntry(){const p=S.p,c=CL[p.club];const e={y:S.year,club:p.club,l:c.l,pj:0,tit:0,min:0,g:0,a:0,ns:0,nn:0,cs:0,gc:0,ovr:p.ovr,loan:!!p.loan};S.rows.push(e);return e}
 function curEntry(){const p=S.p;let e=S.rows[S.rows.length-1];if(!e||e.y!==S.year||e.club!==p.club)e=newEntry();return e}
@@ -770,7 +770,7 @@ function halfSim(h){
  S.sm.halves[h]=half;S.sm.imp+=imp;
  return half}
 
-function injuryRoll(){const p=S.p;let ch=.13+(p.acl?.05:0)+(p.age>=30?(p.age-29)*.025:0)+S.sm.inj-(p.staff?.04:0)-(p.prof-50)/600;if(S.sm.focus==='fisico')ch-=.04;ch=clamp(ch+[0,.05,.1][DF()],.03,.6);if(p.pos==='POR')ch*=.16;return R()<ch}
+function injuryRoll(){const p=S.p;let ch=.13+(p.acl?.05:0)+(p.age>=30?(p.age-29)*.025:0)+S.sm.inj-(p.staff?.04:0)-(p.prof-50)/600;if(S.sm.focus==='fisico')ch-=.04;ch=clamp(ch+[-.05,0,.05,.1][DF()],.02,.6);if(p.pos==='POR')ch*=.16;return R()<ch}
 
 function endSeason(){
  const p=S.p,club=CL[p.club],lg=L[club.l],sum={titles:[],awards:[],notes:[]};
@@ -868,7 +868,7 @@ function affinity(c,p){const lg=L[c.l],home=L[CL[p.club].l];let w=1;if(lg.c===(p
  if(p.ovr>=74&&lg.cf==='EU')w*=1.6;if(lg.cf==='AS')w*=S.sm.saudi?6:.5;return w}
 function makeOffer(c,p,type){const rk=roleFor(p,c);const sal=round(salaryFor(p.ovr,p.age,c)*rnd(1,1.25)/1000)*1000;
  return{club:c.n,l:c.l,s:c.s,type,years:type==='loan'?1:clamp(ri(2,5)-(p.age>=31?2:0),1,5),salary:type==='loan'?p.salary:Math.max(sal,type==='free'?0:p.salary),role:rk,fee:type==='transfer'?round(marketValue(p.ovr,p.age)*rnd(.9,1.4)/1e4)*1e4:0}}
-function genOffers(kind){const p=S.p,cur=CL[p.club];const jump=-[0,1,2][DF()]+Math.min(6,1+p.rep/35+(p.agentTop?1.5:0)+((S.lastNota||6.8)>=7.3?1.5:0));
+function genOffers(kind){const p=S.p,cur=CL[p.club];const jump=-[-1.5,0,1,2][DF()]+Math.min(6,1+p.rep/35+(p.agentTop?1.5:0)+((S.lastNota||6.8)>=7.3?1.5:0));
  const free=kind==='summer'&&p.contract<=0&&!p.loan;
  let cand=CLUBS.filter(c=>c.n!==p.club&&(!p.loan||c.n!==p.loan.parent)&&accessible(c,p));
  const eo=Math.min(p.ovr,108);
@@ -883,7 +883,7 @@ function genOffers(kind){const p=S.p,cur=CL[p.club];const jump=-[0,1,2][DF()]+Ma
 
 
 /* ---------- Balón de Oro ---------- */
-let BO_B=[29,31.5,33.5],YA_B=[23,25.2,27];
+let BO_B=[26,29,31.5,33.5],YA_B=[21,23,25.2,27];
 const BO_RIVALS=['Erling Haaland','Kylian Mbappé','Lamine Yamal','Jude Bellingham','Vinícius Júnior','Pedri','Florian Wirtz','Jamal Musiala','Endrick','Franco Mastantuono','Kenan Yıldız','Warren Zaïre-Emery','Pau Cubarsí','Désiré Doué','Michael Olise','Cole Palmer','Estêvão','Arda Güler'];
 
 /* ---------- Trofeo Yashin (mejor portero) ---------- */
@@ -892,7 +892,7 @@ function yashin(tr){const p=S.p,b=S.bal||{};
  if(p.pos!=='POR'||!b.starter||p.ovr<85||(b.ata||0)<=20){gala(tr);return}
  const ntChamp=!!(tr&&tr.r&&tr.r.champ);
  const merit=b.lgT&&b.cont&&(b.cs||0)>=20&&(p.pol||1)<=50;
- const score=(merit?5.2+DF()*1.9:0)+(p.ovr-90)*.1+(b.ata||0)/40+(b.cs||0)/6+(b.titles||0)*1+(b.cont||0)*2+((b.nota||6.5)-7)*2+(b.eu?1:-1.5)+(ntChamp?(/Mundial/.test(tr.T.n)?4:/Copa Oro/.test(tr.T.n)?1.5:3):0)-((p.pol||1)>50?1.5:0);
+ const score=(merit?5.2+Math.max(0,DF()-1)*1.9:0)+(p.ovr-90)*.1+(b.ata||0)/40+(b.cs||0)/6+(b.titles||0)*1+(b.cont||0)*2+((b.nota||6.5)-7)*2+(b.eu?1:-1.5)+(ntChamp?(/Mundial/.test(tr.T.n)?4:/Copa Oro/.test(tr.T.n)?1.5:3):0)-((p.pol||1)>50?1.5:0);
  if(window.__GLOG)window.__GLOG.push({k:'ya',s:score,age:p.age});
  const rivals=GK_RIVALS.slice().sort(()=>R()-.5).slice(0,4).map(n=>({n,v:YA_B[DF()]+gauss()*1.5}));
  let all=rivals.concat([{n:p.name,v:score,me:true}]).sort((a,c)=>c.v-a.v);
@@ -915,7 +915,7 @@ function gala(tr){const p=S.p,b=S.bal||{g:0,titles:0,cont:0,nota:6};
  const score=(p.ovr-100)*.12+prod+clubT*2+b.cont*4+(b.nota-7)*2+(b.eu?1:-2)+ntW-polPen;
  const polPen0=0;
  const mode=p.ovr<110?(R()<.32?'abierta':'normal'):R()<(p.ovr<120?.3:.23)?'renida':'normal';
- const rivals=BO_RIVALS.slice().sort(()=>R()-.5).slice(0,4).map(n=>({n,v:mode==='abierta'?[13,15,17][DF()]+gauss()*3.5:mode==='renida'?score+gauss()*1.5:BO_B[DF()]+gauss()*1.8}));
+ const rivals=BO_RIVALS.slice().sort(()=>R()-.5).slice(0,4).map(n=>({n,v:mode==='abierta'?[11,13,15,17][DF()]+gauss()*3.5:mode==='renida'?score+gauss()*1.5:BO_B[DF()]+gauss()*1.8}));
  let all=rivals.concat([{n:p.name,v:score,me:true}]).sort((a,b)=>b.v-a.v);
  const triple=b.lgT&&b.cont&&b.star&&pol<=50;
  if(window.__GLOG)window.__GLOG.push({k:'bo',s:score,age:p.age});
@@ -1390,7 +1390,7 @@ function newGame(){const v=k=>document.getElementById(k).value;const pr=PROFILES
   ovr:pr.ovr+ri(-1,1),pot:ri(pr.pot[0],pr.pot[1])+T.pot,prof:pr.prof+T.prof,morale:62+T.mor,coach:50,pol:1,rep:5+(CANT.sel===3?6:(2-CANT.sel)*3),money:0,club:c.n,cantera:c.n,ctier:barca?0:CANT.sel,contract:3,salary:0,loan:null,staff:false,agentTop:false};
 if(prod){p.ovr=85;p.pot+=12;p.rep+=15;p.prodigy=1}
  p.salary=round(salaryFor(p.ovr,15,c)*.6/1000)*1000||6000;p.peak=p.ovr;
- S={cid:'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),diff:DIFF_START,p,year:2027,rows:[],trophies:[],awards:[],log:[],nt:{caps:0,g:0,debut:null},lastPos:{},step:null,leagues:null};
+ S={cid:'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),diff:DIFF_START,dv:2,p,year:2027,rows:[],trophies:[],awards:[],log:[],nt:{caps:0,g:0,debut:null},lastPos:{},step:null,leagues:null};
  Object.keys(L).forEach(l=>byLeague(l).sort((a,b)=>b.s-a.s).forEach((x,i)=>S.lastPos[x.n]=i+1));
  news(barca?`La Masia te reclutó: saliste de la cantera del FC Barcelona y firmaste tu primer contrato profesional.`:CANT.sel===3?`¡${c.n} apostó por ti! Dejas ${p.nat} con 15 años y firmas tu primer contrato profesional en ${L[c.l].n}.`:`Saliste de la ${T.k.toLowerCase()} de ${c.n} y firmaste tu primer contrato profesional.`);if(prod)news(`¡Niño prodigio estilo Lamine Yamal! Con solo 15 años ya tienes 85 de media. Uno entre cien.`);startSeason();if(prod){const fo=Object.values(CL).filter(x=>['ESP','ENG','ITA','GER','FRA'].includes(x.l)&&L[x.l].c!==p.nat&&x.l!==CL[p.club].l).sort((a,b)=>b.s-a.s).slice(0,10);show('prodigio',{fc:fo.length?fo[ri(0,fo.length-1)].n:null})}}
 const BASE_L={};CLUBS.forEach(c=>BASE_L[c.n]=c.l);
@@ -1522,12 +1522,12 @@ let pendingOrder=null;
  $('gear').onclick=open;$('set-cancel').onclick=close;
  box.addEventListener('click',e=>{if(e.target===box)close()});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!box.hidden)close()});
- $('set-save').onclick=()=>{const name=($('set-name').value||'').trim().slice(0,28),num=clamp(+$('set-num').value||9,1,99),d=clamp(+$('set-diff').value||0,0,2);
+ $('set-save').onclick=()=>{const name=($('set-name').value||'').trim().slice(0,28),num=clamp(+$('set-num').value||9,1,99),d=clamp(+$('set-diff').value||0,0,3);
   if(S&&S.p){const old=DF();if(name)S.p.name=name;S.p.num=num;S.diff=d;if(isLat(S.p)){const nl=$('set-lat').value;if(nl!==(S.p.latRole||'defensa')){S.p.latRole=nl;news(`Cambiaste tu rol a ${LATR[nl].n}.`)}}if(old!==d)news(`Dificultad cambiada a ${DIFFS[d].n}.`);save();close();render()}
   else{DIFF_START=d;if(name&&$('name'))$('name').value=name;if($('num'))$('num').value=num;if($('diff'))$('diff').value=String(d);close();const ev=$('diff');if(ev)ev.dispatchEvent(new Event('change'))}};
 })();
 
-function migrate(){if(!S||!S.p)return;if(!S.cid)S.cid='c'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+function migrate(){if(!S||!S.p)return;if(!S.dv){if(S.diff!=null)S.diff=Math.min(3,S.diff+1);S.dv=2}if(!S.cid)S.cid='c'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
  const fut=S.awards.filter(a=>a.n==='Balón de Oro'&&a.y>S.year);
  if(fut.length){S.awards=S.awards.filter(a=>!(a.n==='Balón de Oro'&&a.y>S.year));S.log=S.log.filter(n=>!(/2043/.test(n.t)&&/Claude|France Football/.test(n.t)));
   news(`Corrección: se quitó un Balón de Oro de ${fut.map(a=>a.y).join(', ')} que llegó por error desde tu carrera anterior.`)}}
