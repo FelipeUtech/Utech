@@ -448,10 +448,16 @@ function fx(d){const p=S.p,chips=[];
 
 /* ---------- eventos ---------- */
 const EVENTS=[
-{id:'estudio',w:p=>p.age<=18&&!S.studyDone&&(S.studyNo||0)<2,t:'Tu mamá quiere que estudies',x:p=>`Tu mamá te sienta en la mesa de la cocina: "El fútbol es muy bonito, mijo, pero primero el colegio". Quiere que termines el bachillerato${S.studyNo?' y esta vez no piensa ceder':''}. Las clases de la tarde chocan con los entrenamientos.`,
- o:[{l:'Hacerle caso y estudiar',d:'Sin entrenamiento esta temporada: casi no mejoras',f:()=>{S.studyDone=1;anim3d('estudio','estudiar');news('Dejaste los entrenamientos de la tarde para terminar el colegio.');return['Te pones juicioso con el colegio y faltas a los entrenamientos de la tarde. Tu mamá está feliz, pero tu cuerpo lo nota: esta temporada no entrenas.',[{t:'Sin entrenamiento',c:'bad'}].concat(fx({growth:-1.2,morale:6,prof:6}))]}},
-  {l:'Estudiar de noche y entrenar de día',d:'Mejoras un poco menos y te cansas',f:()=>{S.studyDone=1;anim3d('estudio','noche');return['Clases a las 7 p. m., tareas hasta medianoche y entrenamiento a las 8 a. m. Cumples con las dos cosas, pero vas cansado.',fx({growth:-.4,inj:.03,prof:4,morale:-2})]}},
-  {l:'Decirle que no: solo fútbol',d:'Tu mamá se enoja',f:()=>{S.studyNo=(S.studyNo||0)+1;anim3d('estudio','no');return['Le dices que vas a ser futbolista sí o sí. Tu mamá no te habla en una semana.',fx({morale:-10,growth:.2})]}}]},
+{id:'tirolibre',w:p=>p.pos!=='POR',t:'Tiro libre al minuto 90',x:p=>`Van empatados y hay falta en la puerta del área. El especialista del equipo ya agarró el balón, pero tú lo pides.`,
+ o:[{l:'Pegarle tú',d:'Si entra, eres el héroe',f:()=>R()<.33?['¡Golazo al ángulo! El estadio se viene abajo.',fx({rep:6,morale:8,coach:2})]:['Le pegaste a la barrera. El especialista te mira feo.',fx({morale:-5,coach:-4})]},
+  {l:'Dejárselo al especialista',d:'Lo seguro',f:()=>R()<.25?['Lo metió y te abrazó primero a ti.',fx({morale:4,coach:3})]:['Se fue por arriba. Nadie te culpa.',fx({coach:2})]},
+  {l:'Jugada ensayada',d:'Amagas y patea otro',f:()=>R()<.28?['La jugada salió perfecta y diste la asistencia.',fx({coach:6,rep:3,morale:4})]:['El portero no se comió el amago.',fx({coach:1})]}]},
+{id:'sistema',t:'El DT cambia el sistema',x:p=>`El entrenador quiere jugar con tres centrales. En el nuevo esquema tu puesto cambia un poco.`,
+ o:[{l:'Adaptarte sin quejarte',d:'El DT te valora',f:()=>['Te aprendiste el sistema en una semana.',fx({coach:8,goal:.95})]},
+  {l:'Pedir tu posición de siempre',d:'Más gol, menos confianza',f:()=>['El DT acepta a regañadientes.',fx({coach:-6,goal:1.06})]}]},
+{id:'provocacion',t:'El rival te provoca',x:p=>`En el clásico, un defensor rival te pisa y te insulta para que reacciones. El árbitro no ve nada.`,
+ o:[{l:'Responderle',d:'Riesgo de roja',f:()=>R()<.45?['Le diste un empujón y el árbitro te sacó roja. Tres fechas de sanción.',fx({miss:.06,coach:-8,morale:-4})]:['Le dijiste un par de cosas y nadie lo vio. Te calentaste y jugaste mejor.',fx({morale:4,rep:2})]},
+  {l:'Ignorarlo y responder con fútbol',d:'Cabeza fría',f:()=>R()<.5?['Le hiciste un caño y metiste el gol. Se lo dedicaste en silencio.',fx({rep:5,morale:6,coach:3})]:['Mantuviste la calma. Partido discreto, pero sin problemas.',fx({coach:3,prof:2})]}]},
 {id:'fiesta',t:'Fiesta antes del clásico',x:p=>`Faltan dos días para el clásico y tres compañeros te invitan a una fiesta en la casa de un cantante. Van a ir hinchas del club con el celular en la mano.`,
  o:[{l:'Ir un rato y volver temprano',d:'Algo de riesgo',f:()=>R()<.35?['Alguien subió un video tuyo a las 2 a. m. El DT te dejó en el banco en el clásico.',fx({coach:-12,morale:4,miss:.04})]:['Te fuiste a las 11 p. m. y nadie dijo nada. El grupo te ve como uno más.',fx({morale:8,coach:1})]},
   {l:'Quedarte en casa',d:'Descanso y concentración',f:()=>['Dormiste nueve horas y llegaste al clásico a tope.',fx({prof:4,coach:3,morale:-2})]},
@@ -475,9 +481,6 @@ const EVENTS=[
  o:[{l:'Pedir disculpas públicas',d:'Imagen de profesional',f:()=>['La gente valoró la disculpa y la polémica se apagó en dos días.',fx({rep:2,coach:3})]},
   {l:'Ignorarlo',d:'Que pase solo',f:()=>['Siguieron los memes una semana más.',fx({rep:-2})]},
   {l:'Responder a los críticos',d:'Más seguidores, riesgo de sanción',f:()=>R()<.5?['La comisión disciplinaria te sancionó con tres fechas.',polUp(15).concat(fx({rep:4,miss:.12,coach:-6}))]:['Ganaste 200 mil seguidores y no pasó nada más.',fx({rep:6,morale:4})]}]},
-{id:'estudios',w:p=>p.age<=21,t:'Tu familia insiste con el estudio',x:p=>`Tu mamá quiere que termines el bachillerato o empieces una carrera a distancia, por si el fútbol no sale.`,
- o:[{l:'Estudiar de noche',d:'Mentalidad más madura',f:()=>['Te cuesta, pero vas aprobando. En el club valoran tu disciplina.',fx({prof:7,morale:-3,ovr:1})]},
-  {l:'Dejarlo para después',d:'Todo al fútbol',f:()=>['Tu mamá no está contenta, pero tienes más tiempo para entrenar.',fx({morale:2,growth:.2})]}]},
 {id:'fichaje',w:p=>['estrella','titular'].includes(S.roleNow),t:'Llega competencia a tu puesto',x:p=>`El club fichó a un ${POS[p.pos].n.toLowerCase()} ${pick(['uruguayo','argentino','paraguayo','brasileño','ecuatoriano','venezolano'])} con experiencia en selección. Viene a pelear tu puesto.`,
  o:[{l:'Entrenar el doble',d:'Progresas, pero subes el riesgo de lesión',f:()=>['El DT ve el esfuerzo y te mantiene en el equipo.',fx({ovr:2,inj:.05,coach:6})]},
   {l:'Hablar con el DT',d:'Puede salir bien o mal',f:()=>R()<.55?['El DT te dijo que sigues siendo importante.',fx({coach:5,morale:5})]:['El DT no aprecia que le pidan explicaciones.',fx({coach:-6})]},
@@ -489,13 +492,6 @@ const EVENTS=[
 {id:'patrocinio',w:p=>p.rep>=30,t:'Contrato de botines',x:p=>`Una marca deportiva te ofrece ${fmtM(12000+p.rep*p.rep*80)} por año por usar sus botines y salir en su campaña.`,
  o:[{l:'Firmar',d:'Dinero y visibilidad',f:p=>['Ya tienes tus botines personalizados.',fx({money:12000+p.rep*p.rep*80,rep:2,morale:4})]},
   {l:'Esperar a una marca más grande',d:'Apuesta a futuro',f:()=>['Tu representante dice que vendrá algo mejor si sigues así.',[]]}]},
-{id:'inversion',w:p=>p.money>=150000,t:'Qué hacer con los ahorros',x:p=>`Tienes ${fmtM(p.money)} ahorrados. Un amigo del barrio te propone invertir.`,
- o:[{l:'Comprar un apartamento',d:'Seguro, sin sorpresas',f:p=>['Compraste un apartamento para tus papás. Inversión segura.',fx({morale:6})]},
-  {l:'Meter el 30% en el negocio del amigo',d:'Puede doblarse o perderse',f:p=>{const v=p.money*.3;return R()<.45?['El negocio funcionó y doblaste lo invertido.',fx({money:v})]:['El negocio quebró en ocho meses.',fx({money:-v*.85,morale:-6})]}},
-  {l:'Meter el 20% en cripto',d:'Muy arriesgado',f:p=>{const v=p.money*.2;return R()<.3?['Subió como espuma. Triplicaste lo invertido.',fx({money:v*2})]:['Se desplomó. Perdiste casi todo lo que metiste.',fx({money:-v*.75,morale:-5})]}}]},
-{id:'familia',w:p=>p.age>=23&&!p.kids,t:'Noticia en casa',x:p=>`Tu pareja te cuenta que van a ser papás.`,
- o:[{l:'Celebrar y bajar el ritmo social',d:'Más estabilidad',f:p=>{p.kids=1;return['Llega el primer hijo. Estás más enfocado que nunca.',fx({morale:10,prof:5})]}},
-  {l:'Traer a toda la familia a vivir cerca',d:'Apoyo, pero más gastos',f:p=>{p.kids=1;return['Ahora tienes a todos cerca. La casa nunca está en silencio.',fx({morale:12,money:-Math.min(p.money*.1,80000)})]}}]},
 {id:'penal',w:p=>L[CL[p.club].l].cup&&['estrella','titular'].includes(S.roleNow)&&p.pos!=='POR',t:'Penal en la final de copa',x:p=>`Final de la ${L[CL[p.club].l].cup}, minuto 93, empate. Penal a favor y el cobrador habitual ya salió.`,
  o:[{l:'Picarla',d:'Si sale bien, eres leyenda',f:p=>pen(p,.58,'La picaste y el estadio explotó.','El arquero se quedó parado y la atrapó con una mano.',8,'picada')},
   {l:'Fuerte al ángulo',d:'La más segura',f:p=>pen(p,.76,'Al ángulo, imposible para el arquero.','Pegó en el palo y salió.',5,'angulo')},
@@ -1099,11 +1095,11 @@ function statsHTML(h){const por=S.p.pos==='POR';return `<div class="statline">
  ${DSTAT[S.p.pos]&&h.x?DSTAT[S.p.pos].map(([k,n])=>`<div class="stat"><b>${k==='cs'?h.cs:xval(h.x,k)+(['pas','pct'].includes(k)?'%':'')}</b><span>${n}</span></div>`).join(''):''}
  <div class="stat"><b>${h.nota?h.nota.toFixed(2).replace('.',','):'—'}</b><span>Nota media</span></div></div>`}
 
-function pickEvent(){const p=S.p;const el=EVENTS.filter(e=>(!e.w||e.w(p))&&!S.sm.used.includes(e.id)&&!(S.recent||[]).includes(e.id));const st=el.find(e=>e.id==='estudio');const e=st&&R()<.3?st:pick(el.length?el:EVENTS);if(e.pre)e.pre(p);S.sm.used.push(e.id);S.recent=[e.id].concat(S.recent||[]).slice(0,6);return e.id}
+function pickEvent(){const p=S.p;const el=EVENTS.filter(e=>(!e.w||e.w(p))&&!S.sm.used.includes(e.id)&&!(S.recent||[]).includes(e.id));const e=pick(el.length?el:EVENTS);if(e.pre)e.pre(p);S.sm.used.push(e.id);S.recent=[e.id].concat(S.recent||[]).slice(0,6);return e.id}
 function nextAfterPre(){show('event',{id:pickEvent(),next:'h1'})}
 function preDone(t,ch){show('result',{title:'Pretemporada',t,ch,next:'evA'});const f=S.sm.focus,v=f==='fisico'||f==='doble'?'fisico':f==='tecnica'?(S.p.pos==='POR'?'portero':'tecnica'):null;if(v)anim3d('train',v)}
 function go(k){if(k==='pre'){show('pre');return}if(k==='season'){nextSeason();return}
- if(k==='evA'){go('wheel');return}
+ if(k==='evA'){const newClub=S.rows.filter(r=>r.club===S.p.club).length<=1;if((newClub||R()<.3)&&!S.sm.intDone){S.sm.intDone=1;interviewStart('wheel');return}go('wheel');return}
  if(k==='wheel'){if(!S.sm.wheelDone){S.sm.wheelDone=1;show('ruleta',{segs:wheelSegs(),res:null,next:'evA2'});return}go('evA2');return}
  if(k==='evA2'){nextAfterPre();return}if(k==='h1'){halfSim(0);show('half',{h:0})}else if(k==='h2'){halfSim(1);show('half',{h:1})}else if(k==='evB'){show('event',{id:pickEvent(),next:'h2'})}}
 function midDecision(){const p=S.p;
@@ -1939,102 +1935,10 @@ function sceneTrain(L,variant){
 }
 
 
-/* =========================================================
-   ESCENA 4: TU MAMÁ QUIERE QUE ESTUDIES
-   ========================================================= */
-function sceneStudy(L,variant){
-  const night=variant==='noche';
-  const sc=new T.Scene();sc.background=new T.Color(night?'#0b1020':'#d9c7ad');
-  const cam=new T.PerspectiveCamera(46,1,.1,40);
-  sc.add(new T.HemisphereLight(night?'#5a6aa8':'#fff4e0',night?'#1a1410':'#6b5a45',night?.28:.75));
-  const sun=new T.DirectionalLight(night?'#8fa6ff':'#fff1d6',night?.25:1.0);sun.position.set(-3,5,4);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);
-  const sh=sun.shadow.camera;sh.left=-4;sh.right=4;sh.top=4;sh.bottom=-4;sc.add(sun);
-  // cocina
-  const wood=canvasTex(256,256,(x,W,H)=>{for(let i=0;i<8;i++){x.fillStyle=i%2?'#9a6b43':'#a8774c';x.fillRect(0,i*H/8,W,H/8)}x.strokeStyle='rgba(60,35,15,.35)';for(let i=0;i<40;i++){x.beginPath();const y=Math.random()*H;x.moveTo(0,y);x.bezierCurveTo(W*.3,y+6,W*.6,y-6,W,y+3);x.stroke()}});
-  wood.wrapS=wood.wrapT=T.RepeatWrapping;wood.repeat.set(4,4);
-  const floor=mesh(new T.PlaneGeometry(10,10),new T.MeshStandardMaterial({map:wood,roughness:.8}),false);floor.rotation.x=-Math.PI/2;sc.add(floor);
-  const wallM=M(night?'#3a3550':'#e8d9bf',{flatShading:false});
-  const wb=mesh(new T.PlaneGeometry(10,3.2),wallM,false);wb.position.set(0,1.6,-2.2);sc.add(wb);
-  const wl=mesh(new T.PlaneGeometry(10,3.2),wallM,false);wl.position.set(-2.6,1.6,0);wl.rotation.y=Math.PI/2;sc.add(wl);
-  // ventana
-  const win=new T.Mesh(new T.PlaneGeometry(1.3,1),new T.MeshBasicMaterial({map:canvasTex(256,200,(x,W,H)=>{
-    const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,night?'#0a1030':'#8fc7ff');g.addColorStop(1,night?'#1d2550':'#d8eeff');x.fillStyle=g;x.fillRect(0,0,W,H);
-    if(night){x.fillStyle='#fff7d6';x.beginPath();x.arc(W*.72,H*.3,18,0,7);x.fill();x.fillStyle='#fff';for(let i=0;i<25;i++)x.fillRect(Math.random()*W,Math.random()*H*.7,2,2)}
-    else{x.fillStyle='#fff';x.beginPath();x.arc(60,60,22,0,7);x.arc(85,55,26,0,7);x.arc(110,62,20,0,7);x.fill()}
-    x.fillStyle='#f4f0e6';x.fillRect(W/2-4,0,8,H);x.fillRect(0,H/2-4,W,8);x.lineWidth=14;x.strokeStyle='#f4f0e6';x.strokeRect(0,0,W,H)})}));
-  win.position.set(.9,1.7,-2.19);sc.add(win);
-  // nevera y mesón
-  const fr=box(.8,1.9,.7,M('#dfe4ea',{roughness:.4}));fr.position.set(-2.1,.95,-1.75);sc.add(fr);
-  const cnt=box(1.8,.9,.6,M('#7a8b99'));cnt.position.set(-.6,.45,-1.9);sc.add(cnt);const top=box(1.84,.05,.64,M('#efe7da'));top.position.set(-.6,.92,-1.9);sc.add(top);
-  // reloj de pared
-  const clockT=canvasTex(128,128,(x)=>{x.fillStyle='#fffaf0';x.beginPath();x.arc(64,64,60,0,7);x.fill();x.lineWidth=6;x.strokeStyle='#333';x.stroke();x.lineCap='round';
-    const hand=(a,l,w)=>{x.lineWidth=w;x.beginPath();x.moveTo(64,64);x.lineTo(64+Math.sin(a)*l,64-Math.cos(a)*l);x.stroke()};
-    if(night){hand(Math.PI*2*(11.97/12),30,6);hand(Math.PI*2*(58/60),46,4)}else{hand(Math.PI*2*(3.5/12),30,6);hand(Math.PI*2*(30/60),46,4)}});
-  const clk=new T.Mesh(new T.CircleGeometry(.22,24),new T.MeshBasicMaterial({map:clockT}));clk.position.set(-.9,2.3,-2.18);sc.add(clk);
-  // mesa y silla
-  const tm=M('#8b5a2b');const tbl=box(1.5,.06,.85,tm);tbl.position.set(0,.76,0);sc.add(tbl);
-  [[-.68,-.36],[.68,-.36],[-.68,.36],[.68,.36]].forEach(([x,z])=>{const l=box(.06,.74,.06,tm);l.position.set(x,.37,z);sc.add(l)});
-  const ch=new T.Group();const seat=box(.5,.05,.5,M('#6d4524'));seat.position.y=.48;ch.add(seat);const bk=box(.5,.6,.05,M('#6d4524'));bk.position.set(0,.8,-.24);ch.add(bk);
-  [[-.22,-.22],[.22,-.22],[-.22,.22],[.22,.22]].forEach(([x,z])=>{const l=box(.04,.48,.04,M('#6d4524'));l.position.set(x,.24,z);ch.add(l)});
-  ch.position.set(0,0,-.62);sc.add(ch);
-  // libros, cuaderno, lápiz
-  const books=new T.Group();['#c0392b','#2e86de','#27ae60','#f39c12'].forEach((c,i)=>{const b=box(.32,.06,.24,M(c));b.position.set(-.5,.82+i*.062,.05);b.rotation.y=(i-1.5)*.12;books.add(b)});sc.add(books);
-  const nb=mesh(new T.PlaneGeometry(.42,.3),new T.MeshStandardMaterial({map:canvasTex(256,180,(x,W,H)=>{x.fillStyle='#fdfcf7';x.fillRect(0,0,W,H);x.strokeStyle='#9cc3e6';x.lineWidth=2;for(let y=24;y<H;y+=16){x.beginPath();x.moveTo(0,y);x.lineTo(W,y);x.stroke()}
-    x.strokeStyle='#e57373';x.beginPath();x.moveTo(30,0);x.lineTo(30,H);x.stroke();x.fillStyle='#2b3a55';x.font='18px Arial';['x² + 2x = 8','Biología: célula','Sociales: 1810'].forEach((t,i)=>x.fillText(t,40,38+i*32))})}),false);
-  nb.rotation.x=-Math.PI/2;nb.position.set(.05,.795,-.12);sc.add(nb);
-  const pen=cyl(.008,.008,.16,M('#f4c430'),6);pen.rotation.z=Math.PI/2;sc.add(pen);pen.visible=variant!=='no';
-  // lámpara
-  const lamp=new T.Group();const lb=cyl(.08,.1,.03,M('#2d2d2d'),12);lb.position.y=.81;lamp.add(lb);const la=cyl(.012,.012,.42,M('#2d2d2d'),6);la.position.y=1.02;lamp.add(la);
-  const ls=mesh(new T.ConeGeometry(.13,.16,14,1,true),M('#2a9d8f',{side:T.DoubleSide}));ls.position.set(0,1.22,.04);ls.rotation.x=.5;lamp.add(ls);lamp.position.set(.55,0,-.1);sc.add(lamp);
-  const bulb=new T.PointLight('#ffd27a',night?2.6:.5,3.2);bulb.position.set(.55,1.12,0);sc.add(bulb);
-  // personajes
-  const kit=L.kit;
-  const me=person({shirt:kit.shirt,sleeve:kit.sleeve,shorts:kit.shorts,socks:kit.socks,num:L.num,name:L.name,numColor:kit.num});
-  sc.add(me.root);
-  const mom=person({shirt:'#c2185b',sleeve:'#c2185b',shorts:'#34344a',socks:'#34344a',boots:'#4a2c2a',longPants:true,longSleeve:true,hair:'#2a1a12',skin:'#b98058'});
-  const bun=sph(.09,M('#2a1a12'));bun.position.set(0,.1,-.13);mom.head.add(bun);
-  
-  sc.add(mom.root);mom.root.visible=!night;
-  const ball=ballMesh();sc.add(ball);ball.visible=variant==='no';
-  const camPos=V(2.1,1.65,2.5),look=V(0,1,-.1);
-  function sit(P){P.root.position.set(0,0,-.6);P.root.rotation.y=0;P.hips.position.y=.56;legA(P,0,1.5,1.5);legA(P,1,1.5,1.5)}
-  function update(t,dt){
-    rest(me);rest(mom);
-    if(variant==='no'){
-      // jugando con el balón en la cocina
-      me.root.position.set(-.75,0,.6);me.root.rotation.y=Math.PI/2-.45;
-      const ph=t*4.2,up=Math.max(0,Math.sin(ph));legA(me,1,.15+.55*up,.35+.4*up);legA(me,0,-.05,.15);armA(me,0,.1,.3,.45);armA(me,1,.1,.3,.45);me.head.rotation.x=.35;
-      sc.updateMatrixWorld();const f=V(0,0,0);me.kn[1].children[1].getWorldPosition(f);
-      ball.position.set(f.x+.05,.35+Math.abs(Math.cos(ph/2))*.75,f.z+.12);ball.rotation.x+=dt*8;
-      // mamá de brazos cruzados, negando
-      mom.root.position.set(.75,0,.6);mom.root.rotation.y=-Math.PI/2+.45;
-      armA(mom,0,.45,1.7,-.12);armA(mom,1,.45,1.7,-.12);mom.el[0].rotation.order=mom.el[1].rotation.order='YXZ';mom.el[0].rotation.y=-.95;mom.el[1].rotation.y=.95;mom.head.rotation.y=Math.sin(t*7)*.32*(t%3<1.6?1:0);
-      cap(t<2.5?'Tu mamá quiere que estudies':t<5?'«¡Voy a ser futbolista sí o sí!»':'Tu mamá no te habla en una semana',t>=2.5&&t<5);
-    }else{
-      sit(me);
-      // escribiendo
-      const w=Math.sin(t*9);armA(me,1,1.05+.05*w,.75,-.15);armA(me,0,.95,1.1,-.3);me.spine.rotation.x=.32;me.head.rotation.x=.42;
-      sc.updateMatrixWorld();const h=V(0,0,0);me.hand[1].getWorldPosition(h);pen.position.set(h.x+.02,Math.max(.81,h.y-.02),h.z+.03);pen.rotation.y=.6;
-      if(night){ // sueño: cabeceo
-        const c=t%4,nod=c<2.6?ez(c/2.6)*.55:c<2.8?lerp(.55,0,(c-2.6)/.2):0;me.head.rotation.x=.42+nod;
-        cap(t<3?'Clases a las 7 p. m.':t<6?'Tareas hasta medianoche…':'Y mañana a entrenar a las 8 a. m.',false);
-      }else{
-        mom.root.position.set(-.95,0,.15);mom.root.rotation.y=1.9;
-        const c=Math.sin(t*10);if(t%4<1.4){armA(mom,0,1.1,1.1+.3*c,-.35);armA(mom,1,1.1,1.1-.3*c,-.35)}else{armA(mom,0,.2,.4,.1);armA(mom,1,.9,1.6,-.3)}
-        mom.head.rotation.x=Math.sin(t*3)*.08;
-        cap(t<3?'Primero el colegio':t<6?'Sin entrenamiento esta temporada':'Tu mamá está orgullosa',t>=6);
-      }
-    }
-    const a=Math.sin(t*.25)*.18;const cp=variant==='no'?V(.2+Math.sin(a)*.8,1.55,3.7):V(2.3*Math.cos(a)-.2,1.65,2.5+Math.sin(a)*.4),lk=V(0,variant==='no'?1:.95,variant==='no'?.5:-.2);
-    const k=cl(dt*2.5,0,1);camPos.lerp(cp,k);look.lerp(lk,k);cam.position.copy(camPos);cam.lookAt(look);
-  }
-  return{scene:sc,cam,update,dur:9,loopDur:9,tag:'Tu mamá quiere que estudies'};
-}
-
 function disposeScene(s){s.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){[].concat(o.material).forEach(m=>{if(m.map)m.map.dispose();m.dispose()})}})}
 function close(){ov.hidden=true;cancelAnimationFrame(raf);raf=0;if(cur){disposeScene(cur.scene);cur=null}document.documentElement.style.overflow=''}
 function start(){const [kind,variant,L]=lastArgs;if(cur)disposeScene(cur.scene);
- cur=kind==='gala'?sceneGala(L):kind==='penal'?scenePenal(L,variant):kind==='estudio'?sceneStudy(L,variant):sceneTrain(L,variant);clock=0;capTxt='#';cap('');size();
+ cur=kind==='gala'?sceneGala(L):kind==='penal'?scenePenal(L,variant):sceneTrain(L,variant);clock=0;capTxt='#';cap('');size();
  if(!raf){last=performance.now();raf=requestAnimationFrame(loop)}}
 ov.querySelector('[data-a=rep]').onclick=start;ov.querySelector('[data-a=skip]').onclick=close;
 addEventListener('keydown',e=>{if(!ov.hidden&&e.key==='Escape')close()});
