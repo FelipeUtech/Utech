@@ -1738,11 +1738,11 @@ const ov=document.createElement('div');ov.className='a3d';ov.hidden=true;ov.setA
 ov.innerHTML='<div class="a3d-stage"><canvas></canvas><div class="a3d-cap off"></div></div><div class="a3d-bar"><button type="button" class="btn ghost small" data-a="rep">Repetir</button><button type="button" class="btn small" data-a="skip">Continuar</button></div>';
 document.body.appendChild(ov);
 const stageEl=ov.querySelector('.a3d-stage'),cv=ov.querySelector('canvas'),capEl=ov.querySelector('.a3d-cap');
-const renderer=new T.WebGLRenderer({canvas:cv,antialias:!LITE,powerPreference:'low-power'});
+const renderer=new T.WebGLRenderer({canvas:cv,antialias:true,powerPreference:'high-performance'});
 renderer.outputEncoding=T.sRGBEncoding;renderer.shadowMap.enabled=!LITE;renderer.shadowMap.type=T.PCFSoftShadowMap;
 renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
 let cur=null,clock=0,last=performance.now(),raf=0,lastArgs=null,onEnd=null;
-function size(){const r=stageEl.getBoundingClientRect();if(!r.width)return;renderer.setPixelRatio(Math.min(devicePixelRatio||1,LITE?1.25:2));renderer.setSize(r.width,r.height,false);if(cur){cur.cam.aspect=r.width/r.height;cur.cam.updateProjectionMatrix()}}
+function size(){const r=stageEl.getBoundingClientRect();if(!r.width)return;renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.setSize(r.width,r.height,false);if(cur){cur.cam.aspect=r.width/r.height;cur.cam.updateProjectionMatrix()}}
 addEventListener('resize',size);
 let capTxt='';
 function cap(txt,gold){if(txt===capTxt)return;capTxt=txt;capEl.classList.add('off');setTimeout(()=>{capEl.textContent=txt;capEl.classList.toggle('gold',!!gold);if(txt)capEl.classList.remove('off')},txt?180:0)}
