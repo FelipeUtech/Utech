@@ -1685,7 +1685,7 @@ function bodyGeo(k){if(BODY_GEO[k])return BODY_GEO[k];const L=(pts,seg)=>new T.L
   else if(k==='neck')g=L([[.095,.2],[.094,.14],[.096,.08],[.1,.03],[.106,0]],22);
   else if(k==='shortleg')g=L([[.118,0],[.123,-.08],[.128,-.17],[.132,-.23]],18);
   else if(k==='thigh')g=L([[.094,-.05],[.099,-.12],[.097,-.2],[.088,-.29],[.075,-.38],[.064,-.45],[.06,-.47]],18);
-  else if(k==='collar'){g=new T.TorusGeometry(.104,.015,8,32);g.rotateX(Math.PI/2);g.scale(1,1,.86)}
+  else if(k==='collar'){g=new T.TorusGeometry(.102,.011,8,40);g.rotateX(Math.PI/2);g.scale(1,1,.92)}
   else if(k==='knee')g=new T.SphereGeometry(.058,14,10);
   else if(k==='shin')g=L([[.06,.01],[.064,-.04],[.071,-.11],[.07,-.17],[.06,-.25],[.048,-.33],[.042,-.4],[.044,-.46]],16);
   else if(k==='cuff')g=new T.TorusGeometry(.069,.006,6,20).rotateX(Math.PI/2);
@@ -1725,7 +1725,7 @@ function person(o){
   const trimC=o.trim||(o.sleeve&&o.sleeve!==o.shirt?o.sleeve:shade(o.shirt,-.28));
   const tor=o.suit?torsoMesh(mS):torsoMesh([M(o.shirt,{flatShading:false}),M(trimC,{flatShading:false})]);tor.position.y=-.02;spine.add(tor);
   if(!o.suit){const mT=M(trimC,{flatShading:false});
-    const col=new T.Mesh(bodyGeo('collar'),mT);col.position.set(0,.64,-.028);spine.add(col);
+    const col=new T.Mesh(bodyGeo('collar'),mT);col.position.set(0,.6,-.012);spine.add(col);
     if(o.num!=null){const cr=new T.Mesh(new T.PlaneGeometry(.085,.1),new T.MeshStandardMaterial({map:crestTex(o.shirt,trimC),transparent:true,roughness:.6}));cr.position.set(.095,.37,.199);cr.rotation.x=-.06;spine.add(cr)}}
   const nk=new T.Mesh(bodyGeo('neck'),mKS);nk.position.set(-.006,.555,-.035);nk.scale.set(.98,1,1.02);spine.add(nk);
   const head=new T.Group();head.position.y=.845;spine.add(head);
@@ -1881,7 +1881,7 @@ function crestTex(c1,c2){return canvasTex(96,112,(x,W,H)=>{const sh=()=>{x.begin
   sh();x.lineWidth=6;x.strokeStyle='#d4a52a';x.stroke();x.fillStyle='#d4a52a';x.beginPath();x.arc(W/2,17,5,0,7);x.fill()})}
 /* torso con forma: cintura, pecho, hombros; paneles laterales y ruedo del color de la manga */
 function torsoMesh(mat){if(!TORSO_GEO){
-  const R=[[0,.192,.152,0],[.06,.188,.148,0],[.16,.196,.156,.006],[.26,.214,.17,.012],[.34,.228,.18,.014],[.42,.231,.178,.01],[.48,.222,.166,.005],[.53,.2,.15,0],[.575,.178,.135,-.008],[.615,.14,.112,-.014],[.645,.108,.098,-.02],[.655,.09,.085,-.02]];
+  const R=[[0,.192,.152,0],[.06,.188,.148,0],[.16,.196,.156,.006],[.26,.214,.17,.012],[.34,.228,.18,.014],[.42,.231,.178,.01],[.48,.222,.166,.005],[.53,.2,.15,0],[.57,.176,.134,-.006],[.603,.138,.11,-.012],[.624,.106,.096,-.014],[.632,.09,.084,-.014]];
   const S=40,pos=[],idx=[],trim=[];const ex=2/2.7;
   R.forEach(([y,w,d,zo])=>{for(let k=0;k<S;k++){const a=k/S*Math.PI*2,c=Math.cos(a),sn=Math.sin(a);const front=sn>0?1:0;
     pos.push(w*Math.sign(c)*Math.pow(Math.abs(c),ex),y,(d+front*zo*1.6)*Math.sign(sn)*Math.pow(Math.abs(sn),ex)+zo*.4)}});
