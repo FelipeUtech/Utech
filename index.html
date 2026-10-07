@@ -1685,8 +1685,8 @@ function person(o){
   if(o.num!=null){const pl=new T.Mesh(new T.PlaneGeometry(.36,.36),new T.MeshBasicMaterial({map:numTex(o.num,o.name,o.numColor||'#fff'),transparent:true}));pl.position.set(0,.3,-.158);pl.rotation.y=Math.PI;spine.add(pl)}
   [1,-1].forEach((s,i)=>{
     const sh=new T.Group();sh.position.set(s*.2,.47,0);spine.add(sh);
-    const slv=o.longSleeve?mSl:M(o.sleeve||o.shirt,{flatShading:false});const ball=sph(.096,slv,20);ball.scale.set(1,.62,1);ball.position.y=-.005;sh.add(ball);
-    const skM=M(o.skin||'#c08a5f',{flatShading:false}),slM=M(o.sleeve||o.shirt,{flatShading:false});sh.add(armMesh(o.longSleeve?mSl:skM,.31));if(!o.longSleeve){const tube=mesh(new T.CylinderGeometry(.108,.113,.15,22,1,true),slv);tube.material.side=T.DoubleSide;tube.position.y=-.075;tube.rotation.z=s*.06;sh.add(tube);const hem=mesh(new T.TorusGeometry(.111,.01,8,24),slv);hem.rotation.x=Math.PI/2;hem.position.y=-.148;hem.position.x=-s*.005;sh.add(hem)}
+    const slv=o.longSleeve?mSl:M(o.sleeve||o.shirt,{flatShading:false});const ball=sph(.108,slv,20);ball.scale.set(1,.7,1);ball.position.y=-.005;sh.add(ball);
+    const skM=M(o.skin||'#c08a5f',{flatShading:false}),slM=M(o.sleeve||o.shirt,{flatShading:false});sh.add(armMesh(o.longSleeve?mSl:skM,.31));if(!o.longSleeve){const tube=mesh(new T.CylinderGeometry(.108,.113,.15,22,1,false),slv);tube.position.y=-.075;tube.rotation.z=s*.06;sh.add(tube);const hem=mesh(new T.TorusGeometry(.111,.01,8,24),slv);hem.rotation.x=Math.PI/2;hem.position.y=-.148;hem.position.x=-s*.005;sh.add(hem)}
     
     const el=new T.Group();el.position.y=-.31;sh.add(el);
     el.add(armMesh(o.longSleeve?mSl:skM,.26));
@@ -1735,7 +1735,7 @@ function path(pts){let d=0;pts[0].d=0;for(let i=1;i<pts.length;i++){const a=pts[
 /* ---------- motor ---------- */
 const LITE=Math.min(innerWidth,innerHeight)<700||(navigator.hardwareConcurrency||8)<=4;
 const ov=document.createElement('div');ov.className='a3d';ov.hidden=true;ov.setAttribute('role','dialog');ov.setAttribute('aria-label','Animación');
-ov.innerHTML='<div class="a3d-stage"><canvas></canvas><div class="a3d-cap off"></div></div><div class="a3d-bar"><button type="button" class="btn ghost small" data-a="pause">⏸ Pausa</button><button type="button" class="btn ghost small" data-a="rep">Repetir</button><button type="button" class="btn small" data-a="skip">Continuar</button></div>';
+ov.innerHTML='<div class="a3d-stage"><canvas></canvas><div class="a3d-cap off"></div></div><div class="a3d-bar"><button type="button" class="btn ghost small" data-a="rep">Repetir</button><button type="button" class="btn small" data-a="skip">Continuar</button></div>';
 document.body.appendChild(ov);
 const stageEl=ov.querySelector('.a3d-stage'),cv=ov.querySelector('canvas'),capEl=ov.querySelector('.a3d-cap');
 const renderer=new T.WebGLRenderer({canvas:cv,antialias:true,powerPreference:'high-performance'});
@@ -2175,7 +2175,7 @@ function close(){ov.hidden=true;cancelAnimationFrame(raf);raf=0;if(cur){disposeS
 function start(){const [kind,variant,L]=lastArgs;if(cur)disposeScene(cur.scene);
  cur=kind==='gala'?sceneGala(L):kind==='penal'?scenePenal(L,variant):kind==='fk'?sceneFK(L,variant):sceneTrain(L,variant);clock=0;capTxt='#';cap('');size();
  if(!raf){last=performance.now();raf=requestAnimationFrame(loop)}}
-const pb=ov.querySelector('[data-a=pause]');const setPause=v=>{paused=v;pb.textContent=v?'▶ Seguir':'⏸ Pausa';pb.setAttribute('aria-pressed',String(v))};pb.onclick=()=>setPause(!paused);stageEl.addEventListener('click',()=>setPause(!paused));
+const setPause=v=>{paused=v};
 ov.querySelector('[data-a=rep]').onclick=()=>{setPause(false);start()};ov.querySelector('[data-a=skip]').onclick=close;
 addEventListener('keydown',e=>{if(!ov.hidden&&e.key==='Escape')close()});
 return{play(kind,variant,L){setPause(false);lastArgs=[kind,variant,L];ov.hidden=false;document.documentElement.style.overflow='hidden';requestAnimationFrame(()=>{start();ov.querySelector('[data-a=skip]').focus()})}}}
