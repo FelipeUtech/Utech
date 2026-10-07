@@ -1685,8 +1685,8 @@ function person(o){
   if(o.num!=null){const pl=new T.Mesh(new T.PlaneGeometry(.36,.36),new T.MeshBasicMaterial({map:numTex(o.num,o.name,o.numColor||'#fff'),transparent:true}));pl.position.set(0,.3,-.158);pl.rotation.y=Math.PI;spine.add(pl)}
   [1,-1].forEach((s,i)=>{
     const sh=new T.Group();sh.position.set(s*.2,.47,0);spine.add(sh);
-    const ball=sph(.078,o.longSleeve?mSl:M(o.sleeve||o.shirt,{flatShading:false}),14);ball.scale.set(1,.85,1);sh.add(ball);
-    const skM=M(o.skin||'#c08a5f',{flatShading:false}),slM=M(o.sleeve||o.shirt,{flatShading:false});sh.add(armMesh(o.longSleeve?mSl:skM,.31));if(!o.longSleeve)sh.add(sleeveMesh(slM,.31));
+    const slv=o.longSleeve?mSl:M(o.sleeve||o.shirt,{flatShading:false});const ball=sph(.1,slv,20);ball.scale.set(1.02,.72,1);ball.position.y=-.005;sh.add(ball);
+    const skM=M(o.skin||'#c08a5f',{flatShading:false}),slM=M(o.sleeve||o.shirt,{flatShading:false});sh.add(armMesh(o.longSleeve?mSl:skM,.31));if(!o.longSleeve){const tube=mesh(new T.CylinderGeometry(.1,.108,.17,22,1,true),slv);tube.material.side=T.DoubleSide;tube.position.y=-.085;tube.rotation.z=s*.06;sh.add(tube);const hem=mesh(new T.TorusGeometry(.104,.012,8,24),slv);hem.rotation.x=Math.PI/2;hem.position.y=-.168;hem.position.x=-s*.005;sh.add(hem)}
     
     const el=new T.Group();el.position.y=-.31;sh.add(el);
     el.add(armMesh(o.longSleeve?mSl:skM,.26));
