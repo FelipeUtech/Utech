@@ -1734,8 +1734,8 @@ function person(o){
   if(o.num!=null){const pl=new T.Mesh(new T.PlaneGeometry(.36,.36),new T.MeshBasicMaterial({map:numTex(o.num,o.name,o.numColor||'#fff'),transparent:true}));pl.position.set(0,.3,-.196);pl.rotation.y=Math.PI;spine.add(pl)}
   [1,-1].forEach((s,i)=>{
     const sh=new T.Group();sh.position.set(s*.2,.47,0);spine.add(sh);
-    const slv=o.longSleeve?mSl:M(o.sleeve||o.shirt,{flatShading:false});const ball=sph(.108,slv,20);ball.scale.set(1,.7,1);ball.position.y=-.005;sh.add(ball);
-    const skM=M(o.skin||'#c08a5f',{flatShading:false}),slM=M(o.sleeve||o.shirt,{flatShading:false});if(!o.longSleeve){const tube=mesh(new T.CylinderGeometry(.108,.113,.15,22,1,false),slv);tube.position.y=-.075;tube.rotation.z=s*.06;sh.add(tube);const hem=mesh(new T.TorusGeometry(.111,.01,8,24),slv);hem.rotation.x=Math.PI/2;hem.position.y=-.148;hem.position.x=-s*.005;sh.add(hem)}
+    const slv=o.longSleeve?mSl:M(o.sleeve||o.shirt,{flatShading:false});const ball=sph(.094,slv,22);ball.scale.set(1.04,.78,1);ball.position.set(-s*.006,-.004,0);sh.add(ball);
+    const skM=M(o.skin||'#c08a5f',{flatShading:false}),slM=M(o.sleeve||o.shirt,{flatShading:false});if(!o.longSleeve){const tube=mesh(new T.CylinderGeometry(.094,.09,.15,24,1,false),slv);tube.position.y=-.075;tube.rotation.z=s*.04;sh.add(tube);const hem=mesh(new T.TorusGeometry(.09,.0065,8,26),slv);hem.rotation.x=Math.PI/2;hem.position.y=-.149;hem.position.x=-s*.003;sh.add(hem)}
     
     const el=new T.Group();el.position.y=-.31;sh.add(el);
     {const am=o.longSleeve?sm(o.sleeve||o.shirt):skM;sh.add(limbMesh(el,.31,ARM_S,ARM_UP,ARM_LO,am,am,false))}
