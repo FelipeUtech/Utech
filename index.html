@@ -87,6 +87,8 @@ button{font:inherit;color:inherit}
 .rk-name{flex:1;min-width:0;overflow-wrap:anywhere;font-weight:600}
 .rk-pts{font-variant-numeric:tabular-nums}
 .rk-set{display:flex;flex-direction:column;gap:8px}
+.anim-list summary{cursor:pointer;font-weight:700;padding:6px 0}
+.anim-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:8px}
 .a3d{position:fixed;inset:0;z-index:1000;background:rgba(4,7,14,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:calc(env(safe-area-inset-top,0px) + 12px) 12px calc(env(safe-area-inset-bottom,0px) + 12px)}
 .a3d-stage{position:relative;width:min(100%,1100px,calc((100vh - 110px)*16/9));aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000}
 @media (max-aspect-ratio:1/1){.a3d-stage{width:100%;aspect-ratio:auto;height:min(74vh,150vw)}}
@@ -333,6 +335,7 @@ td .lg{color:var(--muted);font-size:13px;display:block}
   <label>Dorsal<input id="set-num" type="number" min="1" max="99"></label>
   <label id="set-latbox" hidden>Rol de lateral<select id="set-lat"><option value="extremo">Falso extremo</option><option value="defensa">Defensa lateral</option></select></label>
   <label hidden>Dificultad<select id="set-diff"><option value="0">Fácil: para aprender, juegas más y creces más rápido</option><option value="1">Normal: para disfrutar la carrera</option><option value="2">Difícil: cuesta jugar, crecer y ganar</option><option value="3">Leyenda: solo para cracks de verdad</option></select></label>
+  <details class="anim-list"><summary>Ver animaciones</summary><div class="anim-grid"><button type="button" class="btn ghost small" data-anim="gala|">Gala Balón de Oro</button><button type="button" class="btn ghost small" data-anim="gala|yashin">Gala Trofeo Yashin</button><button type="button" class="btn ghost small" data-anim="penal|gol">Penal: gol</button><button type="button" class="btn ghost small" data-anim="penal|atajada">Penal: atajada</button><button type="button" class="btn ghost small" data-anim="penal|palo">Penal: al palo</button><button type="button" class="btn ghost small" data-anim="penal|picada">Penal: picada</button><button type="button" class="btn ghost small" data-anim="penal|picada_falla">Picada atajada</button><button type="button" class="btn ghost small" data-anim="fk|tu_gol">Tiro libre: golazo</button><button type="button" class="btn ghost small" data-anim="fk|tu_barrera">Tiro libre: barrera</button><button type="button" class="btn ghost small" data-anim="fk|esp_gol">Especialista: gol</button><button type="button" class="btn ghost small" data-anim="fk|esp_fuera">Especialista: afuera</button><button type="button" class="btn ghost small" data-anim="fk|jug_gol">Jugada ensayada</button><button type="button" class="btn ghost small" data-anim="fk|jug_falla">Jugada fallida</button><button type="button" class="btn ghost small" data-anim="train|fisico">Físico</button><button type="button" class="btn ghost small" data-anim="train|tecnica">Técnica y tiro</button><button type="button" class="btn ghost small" data-anim="train|portero">Portero</button><button type="button" class="btn ghost small" data-anim="train|notas">Observar y notas</button><button type="button" class="btn ghost small" data-anim="train|descanso">Descanso</button></div></details>
   <div class="rk-set" id="set-rkbox"><label>Usuario del ranking<input id="set-rkuser" maxlength="20" placeholder="Ej. agusblox" autocomplete="off"></label><button class="btn ghost small" id="set-rank" type="button">Ver ranking en línea</button></div>
   <label>Tema<select id="set-theme"><option value="light">Claro</option><option value="dark">Oscuro</option><option value="auto">Automático (como el celular)</option></select></label>
   <label class="chk"><input type="checkbox" id="set-3d"> Animaciones 3D: gala, penales y entrenamiento</label>
@@ -1581,7 +1584,7 @@ let pendingOrder=null;
  $('set-reset-ask').onclick=()=>{$('set-reset-confirm').hidden=false;$('set-reset-ask').hidden=true;$('set-reset-no').focus()};
  $('set-reset-no').onclick=()=>{$('set-reset-confirm').hidden=true;$('set-reset-ask').hidden=false};
  $('set-reset-yes').onclick=()=>{archiveCareer('reinicio');S=null;try{localStorage.removeItem('trayectoria-fc')}catch(e){}uiTab='carrera';mView='opciones';close();render();window.scrollTo(0,0)};
- $('gear').onclick=open;$('set-cancel').onclick=()=>{thApply(thGet());close()};
+ $('gear').onclick=open;box.querySelectorAll('[data-anim]').forEach(b=>b.onclick=()=>{const [k,v]=b.dataset.anim.split('|');close();if(!anim3d(k,v||null,k==='gala'&&v==='yashin'?{title:'Trofeo Yashin'}:{},true))alert('Las animaciones 3D necesitan internet para cargar.')});$('set-cancel').onclick=()=>{thApply(thGet());close()};
  $('set-rank').onclick=()=>{const u=rkSetUser($('set-rkuser').value);$('set-rkuser').value=u;if(!u){$('set-rkuser').focus();return}close();rankingShow(true)};
  box.addEventListener('click',e=>{if(e.target===box)close()});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!box.hidden)close()});
@@ -1639,8 +1642,8 @@ function a3dOn(){try{return localStorage.getItem(A3D_KEY)!=='0'}catch(e){return 
 function a3dKit(club){const [a,b,pat]=kitOf(club);const lum=h=>{const n=parseInt(h.slice(1),16);return(.299*(n>>16&255)+.587*(n>>8&255)+.114*(n&255))/255};
  const fcb=club==='FC Barcelona';return{shirt:a,sleeve:fcb?'#004d98':(pat==='stripes'?b:a),shorts:fcb?'#004d98':b,socks:a,num:fcb?'#f2c500':(Math.abs(lum(a)-lum(b))>.35?b:(lum(a)>.6?'#111318':'#ffffff')),tie:a}}
 let A3DI=null;
-function anim3d(kind,variant,extra){if(window.__NO3D||!a3dOn()||!window.THREE||!S||!S.p)return false;
- try{if(!A3DI)A3DI=makeA3D();const p=S.p;A3DI.play(kind,variant,Object.assign({name:p.name,num:p.num,year:S.year,kit:a3dKit(p.club),title:'Balón de Oro'},extra||{}));return true}catch(e){try{console.warn('3D',e)}catch(_){}return false}}
+function anim3d(kind,variant,extra,force){if(window.__NO3D||(!force&&!a3dOn())||!window.THREE)return false;if(!force&&(!S||!S.p))return false;
+ try{if(!A3DI)A3DI=makeA3D();const p=S&&S.p?S.p:{name:'Jugador',num:10,club:'FC Barcelona'};A3DI.play(kind,variant,Object.assign({name:p.name,num:p.num,year:S&&S.year||2027,kit:a3dKit(p.club),title:'Balón de Oro'},extra||{}));return true}catch(e){try{console.warn('3D',e)}catch(_){}return false}}
 function makeA3D(){const T=THREE;const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 /* ---------- utilidades ---------- */
 const lerp=(a,b,u)=>a+(b-a)*u, cl=(x,a,b)=>Math.max(a,Math.min(b,x));
