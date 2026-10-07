@@ -1682,10 +1682,10 @@ function headMesh(mSkin,mHair){if(!HEAD_GEO){const D=HEAD_DATA,b64=t=>Uint8Array
 const BODY_GEO={};
 function bodyGeo(k){if(BODY_GEO[k])return BODY_GEO[k];const L=(pts,seg)=>new T.LatheGeometry(pts.slice().reverse().map(([r,y])=>new T.Vector2(r,y)),seg||18);let g;
   if(k==='pel')g=L([[0,.13],[.15,.13],[.185,.1],[.2,.04],[.2,-.03],[.19,-.09],[.0,-.09]],22);
-  else if(k==='neck')g=L([[.05,.24],[.052,.15],[.055,.08],[.06,.03],[.072,0]],16);
+  else if(k==='neck')g=L([[.082,.17],[.088,.1],[.094,.05],[.1,.015],[.104,0]],20);
   else if(k==='shortleg')g=L([[.104,0],[.11,-.08],[.116,-.17],[.12,-.23]],18);
   else if(k==='thigh')g=L([[.094,-.05],[.099,-.12],[.097,-.2],[.088,-.29],[.075,-.38],[.064,-.45],[.06,-.47]],18);
-  else if(k==='collar'){g=new T.TorusGeometry(.085,.014,8,32);g.rotateX(Math.PI/2);g.scale(1,1,.86)}
+  else if(k==='collar'){g=new T.TorusGeometry(.104,.015,8,32);g.rotateX(Math.PI/2);g.scale(1,1,.86)}
   else if(k==='knee')g=new T.SphereGeometry(.058,14,10);
   else if(k==='shin')g=L([[.06,.01],[.064,-.04],[.071,-.11],[.07,-.17],[.06,-.25],[.048,-.33],[.042,-.4],[.044,-.46]],16);
   else if(k==='cuff')g=new T.TorusGeometry(.066,.009,6,18).rotateX(Math.PI/2);
@@ -1702,9 +1702,9 @@ function person(o){
   const trimC=o.trim||(o.sleeve&&o.sleeve!==o.shirt?o.sleeve:shade(o.shirt,-.28));
   const tor=o.suit?torsoMesh(mS):torsoMesh([M(o.shirt,{flatShading:false}),M(trimC,{flatShading:false})]);tor.position.y=-.02;spine.add(tor);
   if(!o.suit){const mT=M(trimC,{flatShading:false});
-    const col=new T.Mesh(bodyGeo('collar'),mT);col.position.set(0,.585,.004);spine.add(col);
+    const col=new T.Mesh(bodyGeo('collar'),mT);col.position.set(0,.572,-.012);spine.add(col);
     if(o.num!=null){const cr=new T.Mesh(new T.PlaneGeometry(.085,.1),new T.MeshStandardMaterial({map:crestTex(o.shirt,trimC),transparent:true,roughness:.6}));cr.position.set(.095,.37,.199);cr.rotation.x=-.06;spine.add(cr)}}
-  const nk=new T.Mesh(bodyGeo('neck'),mKS);nk.position.y=.56;spine.add(nk);
+  const nk=new T.Mesh(bodyGeo('neck'),mKS);nk.position.set(-.006,.555,-.03);nk.scale.x=.95;spine.add(nk);
   const head=new T.Group();head.position.y=.845;spine.add(head);
   {const hm=headMesh(M(o.skin||'#c08a5f',{flatShading:false}),M(o.hair||'#1d130c',{flatShading:false}));head.add(hm)}
   if(o.suit){const sh=box(.11,.3,.02,M('#f4f4f4'));sh.position.set(0,.38,.205);spine.add(sh);const ti=box(.045,.24,.024,M(o.tie||'#c9a227'));ti.position.set(0,.36,.215);spine.add(ti)}
