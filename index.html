@@ -2072,15 +2072,17 @@ function sceneTrain(L,variant){
   sc.add(me.root);
   const camPos=V(4,3,6),look=V(0,1,0);let heading=0,upd;
   if(variant==='fisico'){
-    const bar=new T.Group();const bm=M('#9aa3ad',{metalness:.8,roughness:.3});const rod=cyl(.025,.025,1.7,bm,8);rod.rotation.z=Math.PI/2;bar.add(rod);
-    [-1,1].forEach(s=>{const p=cyl(.22,.22,.07,M('#1b1d22'),16);p.rotation.z=Math.PI/2;p.position.x=s*.62;bar.add(p);const p2=cyl(.17,.17,.06,M('#c0262f'),16);p2.rotation.z=Math.PI/2;p2.position.x=s*.69;bar.add(p2)});
-    me.spine.add(bar);bar.position.set(0,.68,-.14);
+    const bar=new T.Group();const bm=M('#9aa3ad',{metalness:.8,roughness:.3});const rod=cyl(.025,.025,2.1,bm,8);rod.rotation.z=Math.PI/2;bar.add(rod);
+    [-1,1].forEach(s=>{const p=cyl(.22,.22,.07,M('#1b1d22'),16);p.rotation.z=Math.PI/2;p.position.x=s*.82;bar.add(p);const p2=cyl(.17,.17,.06,M('#c0262f'),16);p2.rotation.z=Math.PI/2;p2.position.x=s*.89;bar.add(p2)});
+    me.spine.add(bar);bar.position.set(0,.68,-.14);const _hA=new T.Vector3(),_hB=new T.Vector3();
         [-4,4].forEach(z=>{cone(-3,z);cone(-2.4,z)});
     const sp=path([{t:8,x:-2.7,z:-4},{t:9.4,x:-2.7,z:4},{t:9.7,x:-2.7,z:4},{t:11.1,x:-2.7,z:-4},{t:11.4,x:-2.7,z:-4},{t:12.8,x:-2.7,z:4}]);
     upd=(t,dt)=>{rest(me);let tgt=heading;
       if(t<7.2){me.root.position.set(0,0,0);tgt=0;bar.visible=true;const ph=(t%1.8)/1.8,d=Math.sin(ph*Math.PI);const sq=ez(d);
         me.hips.position.y=BASE-.4*sq;legA(me,0,1.25*sq,1.95*sq);legA(me,1,1.25*sq,1.95*sq);me.spine.rotation.x=.45*sq;me.head.rotation.x=-.35*sq;
-        armA(me,0,-.3,0,1.5);armA(me,1,-.3,0,1.5);me.el[0].rotation.z=1.2;me.el[1].rotation.z=-1.2;cap('Sentadillas con barra '+Math.min(4,1+Math.floor(t/1.8))+'/4');}
+        armA(me,0,.1,1,1.3);armA(me,1,.1,1,1.3);me.el[0].rotation.z=2.1;me.el[1].rotation.z=-2.1;
+        // la barra pasa por las manos (agarra el palo, no las pesas)
+        me.root.updateMatrixWorld(true);me.hand[0].getWorldPosition(_hA);me.hand[1].getWorldPosition(_hB);me.spine.worldToLocal(_hA);me.spine.worldToLocal(_hB);bar.position.set(0,(_hA.y+_hB.y)/2,(_hA.z+_hB.z)/2);cap('Sentadillas con barra '+Math.min(4,1+Math.floor(t/1.8))+'/4');}
       else if(t<8){bar.visible=false;me.root.position.set(0,0,0);idle(me,t);cap('');const p=path([{t:7.2,x:0,z:0},{t:8,x:-2.7,z:-4}])(t);me.root.position.set(p.x,0,p.z);if(p.mv){tgt=p.h;cycle(me,p.d*3,.5)}}
       else{bar.visible=false;const p=sp(t);me.root.position.set(p.x,0,p.z);if(p.mv&&p.sp>1){tgt=p.h;cycle(me,p.d*2.6,1)}else{idle(me,t);legA(me,0,.3,.6);me.spine.rotation.x=.4;armA(me,0,.2,.6,.2);armA(me,1,.2,.6,.2)}cap('Sprints de 8 metros')}
       heading=angLerp(heading,tgt,cl(dt*9,0,1));me.root.rotation.y=heading;
