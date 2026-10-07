@@ -790,7 +790,7 @@ function halfSim(h){
   if(p.pos==='DC'&&n90>=5&&g<1)g=1;
   if(p.ovr>100&&apps>0&&['DC','ED','EI'].includes(p.pos)){const floorS=11+Math.max(0,round((80-avg)/3))+Math.floor((p.ovr-100)/15);const share=clamp(n90/(games*.35),0,1);const fl=Math.ceil(floorS/2*share);if(g<fl)g=fl+(R()<.5?1:0)}
   if(S.sm.dry&&apps>0){const cap=h===0?ri(4,6):Math.max(0,ri(9,11)-(S.sm.dryG||0));if(g>cap)g=cap;S.sm.dryG=(S.sm.dryG||0)+g}
-  a=Math.max(0,round(P.a*n90*clamp(Math.pow(qf,.8)*tf,.3,2)*form*(1+.2*gauss())));
+  a=Math.max(0,round(P.a*n90*clamp(Math.pow(qf,.8)*tf,.3,2)*form*(S.sm.focus==='vision'?1.15:1)*(1+.2*gauss())));
   if(apps){const exp=(P.g+.7*P.a)*Math.max(n90,1),got=g+.7*a;
    nota=6.5+.03*(p.ovr-avg)+.025*(club.s-avg)+.35*clamp(got/Math.max(exp,.4)-1,-1,1.5)*Math.min(1,(P.g+P.a)*3)+(p.morale-60)/400+gauss()*.12}
  }
@@ -1039,6 +1039,7 @@ function scene(){const p=S.p,st=S.step,club=CL[p.club];let sc;
    choices:[
     (()=>{const g=posGroup(p.pos);const T={POR:['Reflejos y atajadas','+2 media y más atajadas','Horas de reflejos, mano a mano y salidas por arriba.'],DEF:['Marcaje y anticipación','+2 media y mejor defensa','Horas de marcaje, anticipación y juego aéreo.'],MED:['Pase y visión de juego','+2 media y más asistencias','Horas de pase, control orientado y lectura de juego.'],ATA:['Definición y técnica','+2 media y más gol','Horas de definición y técnica con el balón.']}[g];return{l:T[0],d:T[1],f:()=>{S.sm.focus='tecnica';if(g==='ATA')S.sm.goal*=1.06;else S.sm.def=(S.sm.def||1)*1.08;preDone(T[2],fx({ovr:2,growth:.3}))}}})(),
     {l:'Físico y gimnasio',d:'+1 media, menos lesiones',f:()=>{S.sm.focus='fisico';preDone('Ganaste masa muscular y potencia.',fx({ovr:1,inj:-.05,growth:.3}))}},
+    {l:'Observar y tomar notas',d:'Visión: +1 media y más asistencias',f:()=>{S.sm.focus='vision';preDone('Pasas la pretemporada mirando entrenar a tus compañeros y llenas una libreta: quién pide el balón al pie, quién al espacio, por dónde se desmarca cada uno.',fx({ovr:1,coach:4,growth:.3}).concat([{t:'+15% asistencias esta temporada',c:'good'}]))}},
     {l:'Táctica y video',d:'+1 media, el DT confía más',f:()=>{S.sm.focus='tactica';preDone('Ahora entiendes el sistema mejor que nadie.',fx({ovr:1,coach:10,growth:.3}))}},
     {l:'Descanso y vida social',d:'Más moral, sin subir media',f:()=>{S.sm.focus='descanso';preDone('Vacaciones largas con la familia.',fx({morale:14,growth:-.4}))}},
     {l:'Doble turno de entrenamiento',d:'+3 media, más riesgo de lesión',f:()=>{S.sm.focus='doble';preDone('Mañana y tarde, todos los días.',fx({ovr:3,inj:.08,morale:-4}))}}]};break}
