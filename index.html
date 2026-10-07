@@ -1191,7 +1191,7 @@ const CN_N=['brasileño','argentino','francés','español','inglés','portugués
 function genCompetitor(){const p=S.p,c=CL[p.club];if(R()>.75){S.sm.comp=null;return}
  S.sm.comp={n:pick(CN_F)+' '+pick(CN_L),nat:pick(CN_N),ovr:clamp(round(c.s+rnd(-4,7)),45,180)}}
 function startSeason(){const p=S.p;p.pol=clamp((p.pol||1)-8,1,100);S.sm={growth:0,inj:0,goal:1,miss:0,cupWin:null,winterWish:false,used:[],halves:[],roles:[],imp:0,focus:null,saudi:S.sm&&S.sm.saudi&&false};
- S.minDiff=Math.min(S.minDiff!=null?S.minDiff:DF(),DF());S.cont=contFor(p.club);genCompetitor();if(p.club!==S.rkClub){S.rkClub=p.club;setTimeout(rankingShow,60)}else rkPush();S.sm.dry=['ESP','ENG'].includes(CL[p.club].l)&&p.pos!=='POR'&&R()<.35;if(p.carryMiss){S.sm.miss+=p.carryMiss;p.carryMiss=0}curEntry();if(natEvent())return;show('pre')}
+ S.minDiff=Math.min(S.minDiff!=null?S.minDiff:DF(),DF());S.cont=contFor(p.club);genCompetitor();if(p.club!==S.rkClub){S.rkClub=p.club;setTimeout(rankingShow,60)}else rkPush();S.sm.dry=false;if(p.carryMiss){S.sm.miss+=p.carryMiss;p.carryMiss=0}curEntry();if(natEvent())return;show('pre')}
 function natEvent(){const p=S.p;if(p.natRoll||p.age<16)return false;p.natRoll=1;if(S.nt.debut||R()>=.45)return false;
  const alts=Object.keys(NAT).filter(n=>NAT[n].s>NAT[p.nat].s);if(!alts.length)return false;show('nacion',{alt:alts[ri(0,alts.length-1)],who:['abuela','abuelo','madre','padre'][ri(0,3)]});return true}
 function retire(forced){S.retired={y:S.year,age:S.p.age,forced:!!forced};try{archiveCareer('retiro')}catch(e){}news(`Retiro a los ${S.p.age} años.`);show('end')}
@@ -1590,7 +1590,7 @@ let pendingOrder=null;
   else{DIFF_START=d;if(name&&$('name'))$('name').value=name;if($('num'))$('num').value=num;if($('diff'))$('diff').value=String(d);close();const ev=$('diff');if(ev)ev.dispatchEvent(new Event('change'))}};
 })();
 
-function migrate(){if(!S||!S.p)return;if(!S.dv){if(S.diff!=null)S.diff=Math.min(3,S.diff+1);S.dv=2}if(!S.cid)S.cid='c'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+function migrate(){if(!S||!S.p)return;if(S.sm)S.sm.dry=false;if(!S.dv){if(S.diff!=null)S.diff=Math.min(3,S.diff+1);S.dv=2}if(!S.cid)S.cid='c'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
  const fut=S.awards.filter(a=>a.n==='Balón de Oro'&&a.y>S.year);
  if(fut.length){S.awards=S.awards.filter(a=>!(a.n==='Balón de Oro'&&a.y>S.year));S.log=S.log.filter(n=>!(/2043/.test(n.t)&&/Claude|France Football/.test(n.t)));
   news(`Corrección: se quitó un Balón de Oro de ${fut.map(a=>a.y).join(', ')} que llegó por error desde tu carrera anterior.`)}}
