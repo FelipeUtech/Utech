@@ -1688,10 +1688,27 @@ function bodyGeo(k){if(BODY_GEO[k])return BODY_GEO[k];const L=(pts,seg)=>new T.L
   else if(k==='collar'){g=new T.TorusGeometry(.104,.015,8,32);g.rotateX(Math.PI/2);g.scale(1,1,.86)}
   else if(k==='knee')g=new T.SphereGeometry(.058,14,10);
   else if(k==='shin')g=L([[.06,.01],[.064,-.04],[.071,-.11],[.07,-.17],[.06,-.25],[.048,-.33],[.042,-.4],[.044,-.46]],16);
-  else if(k==='cuff')g=new T.TorusGeometry(.066,.009,6,18).rotateX(Math.PI/2);
+  else if(k==='cuff')g=new T.TorusGeometry(.069,.006,6,20).rotateX(Math.PI/2);
   else if(k==='boot'){const sh=new T.Shape();sh.moveTo(-.06,-.095);sh.lineTo(.17,-.095);sh.quadraticCurveTo(.215,-.09,.205,-.06);sh.quadraticCurveTo(.19,-.04,.1,-.03);sh.quadraticCurveTo(.05,-.02,.035,.0);sh.lineTo(-.045,.0);sh.quadraticCurveTo(-.08,-.04,-.06,-.095);
     g=new T.ExtrudeGeometry(sh,{depth:.075,bevelEnabled:true,bevelThickness:.013,bevelSize:.012,bevelSegments:3,curveSegments:10});g.translate(0,0,-.0375);g.rotateY(-Math.PI/2)}
   g.computeVertexNormals();g.userData.keep=true;return BODY_GEO[k]=g}
+/* pierna de una sola pieza que se dobla suave en la rodilla (sin articulaciones visibles) */
+const LEG_S=[-.02,.05,.12,.2,.28,.35,.4,.43,.455,.47,.47,.49,.51,.54,.58,.63,.7,.78,.85,.92],LEG_SEG=16,LEG_SPLIT=10;
+function legR(s){const P=s<.47?[[-.02,.096],[.05,.096],[.12,.099],[.2,.097],[.29,.088],[.38,.075],[.45,.065],[.47,.063]]:[[.47,.064],[.51,.066],[.56,.071],[.62,.07],[.7,.06],[.78,.048],[.85,.042],[.92,.044]];
+  for(let i=1;i<P.length;i++)if(s<=P[i][0]){const u=(s-P[i-1][0])/(P[i][0]-P[i-1][0]);return P[i-1][1]+(P[i][1]-P[i-1][1])*u}return P[P.length-1][1]}
+function legMesh(kn,mUp,mLo){const R=LEG_S.length,S=LEG_SEG+1,pos=new Float32Array(R*S*3),nor=new Float32Array(R*S*3),idx=[],up=[],lo=[];
+  for(let r=0;r<R-1;r++){if(r===LEG_SPLIT-1)continue;for(let k=0;k<LEG_SEG;k++){const a=r*S+k,b=a+1,c=a+S,d=c+1;(r<LEG_SPLIT-1?up:lo).push(a,b,c,b,d,c)}}
+  const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(pos,3));g.setAttribute('normal',new T.BufferAttribute(nor,3));g.setIndex(up.concat(lo));g.addGroup(0,up.length,0);g.addGroup(up.length,lo.length,1);
+  const m=new T.Mesh(g,[mUp,mLo]);m.castShadow=true;m.frustumCulled=false;let lastK=null;
+  const build=()=>{const k=kn.rotation.x;if(k===lastK)return;lastK=k;const L1=.45,b=.07,dz=-Math.sin(k),dy=-Math.cos(k);
+    for(let r=0;r<R;r++){const s=LEG_S[r];let cy,cz,ty,tz;
+      if(s<=L1-b){cy=-s;cz=0;ty=-1;tz=0}else if(s>=L1+b){cy=-L1+dy*(s-L1);cz=dz*(s-L1);ty=dy;tz=dz}
+      else{const u=(s-(L1-b))/(2*b),p0y=-(L1-b),p1y=-L1,p2y=-L1+dy*b,p2z=dz*b;const iu=1-u;cy=iu*iu*p0y+2*iu*u*p1y+u*u*p2y;cz=u*u*p2z;ty=2*iu*(p1y-p0y)+2*u*(p2y-p1y);tz=2*u*p2z;const l=Math.hypot(ty,tz)||1;ty/=l;tz/=l}
+      const rr=legR(s),calf=s>.5&&s<.75?Math.sin((s-.5)/.25*Math.PI)*.012:0;
+      for(let j=0;j<S;j++){const th=j/LEG_SEG*Math.PI*2,c=Math.cos(th),sn=Math.sin(th),nY=tz,nZ=-ty,o=(r*S+j)*3;
+        const rad=rr+(sn<0?calf*(-sn):0);pos[o]=c*rad;pos[o+1]=cy+sn*rad*nY;pos[o+2]=cz+sn*rad*nZ;nor[o]=c;nor[o+1]=sn*nY;nor[o+2]=sn*nZ}}
+    g.attributes.position.needsUpdate=true;g.attributes.normal.needsUpdate=true};
+  build();m.onBeforeRender=build;return m}
 function person(o){
   const P={sh:[],el:[],hip:[],kn:[],hand:[]};
   const root=new T.Group(),hips=new T.Group();hips.position.y=BASE;root.add(hips);
@@ -1719,11 +1736,9 @@ function person(o){
     const hm=handMesh(o.gloves?mG:M(o.skin||'#c08a5f',{flatShading:false}),s,o.gloves?1.2:1);hm.position.y=-.235;el.add(hm);const hand=new T.Object3D();hand.position.y=-.29;el.add(hand);
     const hp=new T.Group();hp.position.set(s*.105,-.04,0);hips.add(hp);
     const leg1=new T.Mesh(bodyGeo('shortleg'),mShS);leg1.castShadow=true;leg1.position.y=.02;hp.add(leg1);
-    const th=new T.Mesh(bodyGeo('thigh'),o.longPants?mShS:mKS);th.castShadow=true;hp.add(th);
     const kn=new T.Group();kn.position.y=-.45;hp.add(kn);
-    const kc=new T.Mesh(bodyGeo('knee'),o.longPants?mShS:mKS);kn.add(kc);
-    const shn=new T.Mesh(bodyGeo('shin'),o.longPants?mShS:mSoS);shn.castShadow=true;shn.scale.z=1.08;kn.add(shn);
-    if(!o.longPants){const cf=new T.Mesh(bodyGeo('cuff'),mSoS);cf.position.y=-.02;kn.add(cf)}
+    hp.add(legMesh(kn,o.longPants?mShS:mKS,o.longPants?mShS:mSoS));
+    if(!o.longPants){const cf=new T.Mesh(bodyGeo('cuff'),mSoS);cf.position.y=-.075;kn.add(cf)}
     const bt=new T.Mesh(bodyGeo('boot'),mBS);bt.castShadow=true;bt.position.set(0,-.395,0);kn.add(bt);
     P.sh[i]=sh;P.el[i]=el;P.hip[i]=hp;P.kn[i]=kn;P.hand[i]=hand;
   });
