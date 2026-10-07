@@ -1749,7 +1749,7 @@ function size(){const r=stageEl.getBoundingClientRect();if(!r.width)return;rende
 addEventListener('resize',size);
 let capTxt='';
 function cap(txt,gold){if(txt===capTxt)return;capTxt=txt;capEl.classList.add('off');setTimeout(()=>{capEl.textContent=txt;capEl.classList.toggle('gold',!!gold);if(txt)capEl.classList.remove('off')},txt?180:0)}
-function loop(now){const dt=cl((now-last)/1000,0,.05);last=now;if(cur){if(!paused){clock+=dt*(cur.slow?cur.slow(clock):1);const t=cur.loopDur?clock%cur.loopDur:Math.min(clock,cur.dur);cur.update(t,dt)}renderer.render(cur.scene,cur.cam)}raf=requestAnimationFrame(loop)}
+function loop(now){const dt=cl((now-last)/1000,0,.05);last=now;if(cur){if(!paused){clock+=dt*(cur.slow?cur.slow(clock):1);const t=cur.loopDur?clock%cur.loopDur:Math.min(clock,cur.dur);cur.update(t,dt);if(!cur.trails){cur.trails=[];const bs=[];cur.scene.traverse(o=>{if(o.userData.isBall)bs.push(o)});bs.forEach(o=>cur.trails.push(ballTrail(cur.scene,o)))}const de=dt*(cur.slow?cur.slow(clock):1);cur.trails.forEach(f=>f(de))}renderer.render(cur.scene,cur.cam)}raf=requestAnimationFrame(loop)}
 
 function lights(sc,o){sc.add(new T.HemisphereLight(o.sky||'#9fb6ff',o.ground||'#20252f',o.hemi??.55));
   const d=new T.DirectionalLight(o.sun||'#ffffff',o.sunI??1.1);d.position.set(...(o.sunPos||[6,12,6]));d.castShadow=true;d.shadow.mapSize.set(1024,1024);
@@ -1781,7 +1781,25 @@ const BALL_DATA={"p":[-865,131,484,-852,-13,522,-826,-29,558,-835,-19,547,-852,-
 function ballMesh(){const BR=.17,D=BALL_DATA,k=BR/1000,pos=new Float32Array(D.p.length);for(let i=0;i<D.p.length;i++)pos[i]=D.p[i]*k;
   const part=(idx,c)=>{const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();const m=new T.Mesh(g,M(c,{roughness:.45,flatShading:false}));m.castShadow=true;return m};
   const inner=new T.Group();inner.add(part(D.w,'#f7f7f7'));inner.add(part(D.k,'#2b2e31'));inner.position.y=BR-.11;
-  const b=new T.Group();b.add(inner);Object.defineProperty(b,'rotation',{value:inner.rotation,configurable:true});return b}
+  const b=new T.Group();b.add(inner);b.userData.isBall=true;Object.defineProperty(b,'rotation',{value:inner.rotation,configurable:true});return b}
+// estela azul que sigue al balón y se desvanece
+let TRAIL_TEX=null;
+function ballTrail(sc,ball){if(!TRAIL_TEX)TRAIL_TEX=canvasTex(64,64,(x,W,H)=>{const g=x.createRadialGradient(32,32,0,32,32,32);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(.5,'rgba(255,255,255,.7)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,W,H)});
+  const N=90,LIFE=.45,pos=new Float32Array(N*3),al=new Float32Array(N),geo=new T.BufferGeometry();
+  geo.setAttribute('position',new T.BufferAttribute(pos,3));geo.setAttribute('al',new T.BufferAttribute(al,1));
+  const mat=new T.ShaderMaterial({uniforms:{map:{value:TRAIL_TEX},col:{value:new T.Color('#1e5bff').convertSRGBToLinear()},sz:{value:.3},vh:{value:600}},transparent:true,depthWrite:false,
+    vertexShader:'attribute float al;varying float va;uniform float sz;uniform float vh;void main(){va=al;vec4 mv=modelViewMatrix*vec4(position,1.0);gl_Position=projectionMatrix*mv;gl_PointSize=sz*(.35+.65*al)*projectionMatrix[1][1]*vh*.5/-mv.z;}',
+    fragmentShader:'uniform sampler2D map;uniform vec3 col;varying float va;void main(){float a=texture2D(map,gl_PointCoord).a*va*.85;if(a<.01)discard;gl_FragColor=vec4(col,a);}'});
+  const pts=new T.Points(geo,mat);pts.frustumCulled=false;pts.renderOrder=5;sc.add(pts);
+  const hist=[],prev=new T.Vector3(),cur=new T.Vector3(),vs=new T.Vector2();let has=false;
+  return dt=>{renderer.getDrawingBufferSize(vs);mat.uniforms.vh.value=vs.y;ball.updateMatrixWorld(true);ball.children[0].getWorldPosition(cur);
+    for(const h of hist)h.a+=dt;while(hist.length&&hist[0].a>LIFE)hist.shift();
+    if(has&&ball.visible){const d=cur.distanceTo(prev);
+      if(d>1.6)hist.length=0; // salto de escena: no dibujar raya
+      else if(dt>0&&d/dt>3){const n=Math.min(8,Math.ceil(d/.05));for(let i=1;i<=n;i++){const p=prev.clone().lerp(cur,i/n);hist.push({x:p.x,y:p.y,z:p.z,a:dt*(1-i/n)})}}}
+    while(hist.length>N)hist.shift();prev.copy(cur);has=true;
+    for(let i=0;i<N;i++){const h=hist[i];if(h){pos[i*3]=h.x;pos[i*3+1]=h.y;pos[i*3+2]=h.z;al[i]=Math.pow(1-h.a/LIFE,1.4)}else al[i]=0}
+    geo.attributes.position.needsUpdate=true;geo.attributes.al.needsUpdate=true;geo.setDrawRange(0,hist.length)}}
 function crowd(sc,o){ // gradas con público
   const n=Math.min(o.n||900,LITE?420:5000),body=new T.InstancedMesh(new T.BoxGeometry(.36,.5,.26),M('#ffffff'),n),head=new T.InstancedMesh(new T.SphereGeometry(.12,8,6),M('#ffffff'),n);
   const m4=new T.Matrix4(),col=new T.Color();let k=0;
