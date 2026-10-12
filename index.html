@@ -327,6 +327,10 @@ body.pad :focus{outline:3px solid #f2b705!important;outline-offset:3px}
 .pad-cur{position:fixed;left:0;top:0;z-index:100000;pointer-events:none;margin:-2px 0 0 -3px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45));transition:scale .1s;display:none}
 .pad-cur.down{scale:.82}
 .pad-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#111a;backdrop-filter:blur(6px);color:#fff;padding:10px 16px;border-radius:12px;font-weight:700;z-index:99999;pointer-events:none}
+.pad-pop{position:fixed;z-index:99998;min-width:200px;max-width:min(92vw,420px);overflow:auto;background:var(--surface,#fff);color:var(--ink,#111);border:2px solid #f2b705;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.35);padding:6px;display:flex;flex-direction:column;gap:2px}
+.pad-pop button{all:unset;display:block;padding:10px 14px;border-radius:9px;font-weight:600;cursor:pointer}
+.pad-pop button.on{background:rgba(242,183,5,.22)}
+.pad-pop button.pad-hov{background:#f2b705;color:#111;outline:none!important;box-shadow:none!important}
 </style>
 
 <header class="band"><div class="in">
@@ -2313,11 +2317,22 @@ window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?
   function hover(){const t=target();const c=t&&t.closest?t.closest(CLK):null;if(c!==hov){if(hov)hov.classList.remove('pad-hov');hov=c;if(hov)hov.classList.add('pad-hov')}}
   function click(){const t=target();if(!t)return;cur.classList.add('down');setTimeout(()=>cur.classList.remove('down'),120);
     const c=t.closest?t.closest(CLK):null;
-    if(c&&c.tagName==='SELECT'){c.focus();const n=(c.selectedIndex+1)%c.options.length;c.selectedIndex=n;c.dispatchEvent(new Event('input',{bubbles:true}));c.dispatchEvent(new Event('change',{bubbles:true}));return}
+    if(c&&c.tagName==='SELECT'){openSel(c);return}
     if(c&&(c.tagName==='TEXTAREA'||c.tagName==='INPUT'&&!/checkbox|radio|button|submit|range/.test(c.type))){c.focus();return}
     const o={bubbles:true,cancelable:true,clientX:cx,clientY:cy,view:window};(c||t).dispatchEvent(new MouseEvent('mousedown',o));(c||t).dispatchEvent(new MouseEvent('mouseup',o));(c||t).click()}
+  // menú con las opciones de una lista desplegable (el navegador no deja abrirla desde el mando)
+  let pop=null;
+  function closeSel(){if(pop){pop.remove();pop=null}}
+  function openSel(sel){closeSel();sel.focus();pop=document.createElement('div');pop.className='pad-pop';pop.setAttribute('role','listbox');
+    [...sel.options].forEach((op,i)=>{if(op.disabled||op.hidden)return;const b=document.createElement('button');b.type='button';b.textContent=op.textContent;if(i===sel.selectedIndex)b.className='on';
+      b.onclick=()=>{sel.selectedIndex=i;sel.dispatchEvent(new Event('input',{bubbles:true}));sel.dispatchEvent(new Event('change',{bubbles:true}));closeSel()};pop.appendChild(b)});
+    pop.style.minWidth=Math.min(sel.getBoundingClientRect().width,innerWidth-16)+'px';document.body.appendChild(pop);const r=sel.getBoundingClientRect(),h=Math.min(pop.scrollHeight,innerHeight*.6);
+    pop.style.left=Math.max(8,Math.min(r.left,innerWidth-pop.offsetWidth-8))+'px';pop.style.top=(r.bottom+h+8<innerHeight?r.bottom+4:Math.max(8,r.top-h-4))+'px';pop.style.maxHeight=h+'px';
+    const on=pop.querySelector('.on');if(on){on.scrollIntoView({block:'center'});const q=on.getBoundingClientRect();cx=q.left+Math.min(40,q.width/2);cy=q.top+q.height/2;cur.style.transform=`translate(${cx}px,${cy}px)`;hover()}}
+  addEventListener('mousedown',e=>{if(pop&&!pop.contains(e.target))closeSel()},true);
   function press(i){
     if(!shown)show(true);const o=a3d();
+    if(pop&&i===1){closeSel();return}
     if(i===0)click();
     else if(i===1){if(o){const b=o.querySelector('[data-a=skip]');if(b)b.click()}else{const ev=new KeyboardEvent('keydown',{key:'Escape',bubbles:true});document.dispatchEvent(ev);window.dispatchEvent(ev)}}
     else if(i===2){if(o){const b=o.querySelector('[data-a=rep]');if(b)b.click()}}
@@ -2332,7 +2347,8 @@ window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?
       if(mx||my){if(!shown)show(true);cx=Math.max(2,Math.min(innerWidth-2,cx+mx));cy=Math.max(2,Math.min(innerHeight-2,cy+my));cur.style.transform=`translate(${cx}px,${cy}px)`;hover();
         // borde de la pantalla: desplaza la página
         if(cy>innerHeight-40&&my>0)scrollBy(0,my*1.2);if(cy<40&&my<0)scrollBy(0,my*1.2)}
-      const ry=ax[3]||0;if(Math.abs(ry)>.2){scrollBy(0,ry*22);if(shown)hover()}
+      const ry=ax[3]||0;if(Math.abs(ry)>.2){if(pop)pop.scrollTop+=ry*22;else scrollBy(0,ry*22);if(shown)hover()}
+      if(pop&&(mx||my)){const r=pop.getBoundingClientRect();if(cx>r.left&&cx<r.right){if(cy>r.bottom-30&&my>0)pop.scrollTop+=my*1.5;if(cy<r.top+30&&my<0)pop.scrollTop+=my*1.5}}
       for(const k of [0,1,2,9]){const p=b(k);if(p&&!prev[k])press(k);prev[k]=p}}
     requestAnimationFrame(loop)}
   function toast(t){const d=document.createElement('div');d.className='pad-toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2800)}
