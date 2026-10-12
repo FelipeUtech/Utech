@@ -2308,7 +2308,7 @@ window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?
   const cands=()=>[...scope().querySelectorAll(SEL)].filter(vis);
   const ctr=e=>{const r=e.getBoundingClientRect();return{x:r.left+r.width/2,y:r.top+r.height/2,r}};
   function foc(e){if(!e)return;e.focus({preventScroll:true});e.scrollIntoView({block:'nearest',inline:'nearest',behavior:'smooth'})}
-  function first(){const c=cands();const inView=c.filter(e=>{const r=e.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight});return (inView.find(e=>e.classList.contains('primary'))||inView[0]||c[0])}
+  function first(){const all=cands(),c=all.filter(e=>e.id!=='gear');if(!c.length)return all[0];const inView=c.filter(e=>{const r=e.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight});return (inView.find(e=>e.classList.contains('primary'))||inView[0]||c[0])}
   function move(dx,dy){const c=cands(),cur=document.activeElement;if(!c.includes(cur)){foc(first());return}
     const a=ctr(cur);let best=null,bs=1e9;
     for(const e of c){if(e===cur)continue;const b=ctr(e),vx=b.x-a.x,vy=b.y-a.y;
