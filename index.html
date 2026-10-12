@@ -322,7 +322,10 @@ td .lg{color:var(--muted);font-size:13px;display:block}
 .statue svg{width:min(260px,70vw);height:auto}
 .plaque{text-align:center;font-family:var(--f-display);text-transform:uppercase;letter-spacing:.06em}
 .plaque b{display:block;font-size:26px}
-body.pad :focus{outline:3px solid #f2b705!important;outline-offset:3px;box-shadow:0 0 0 6px rgba(242,183,5,.25)}
+body.pad .pad-hov{outline:3px solid #f2b705!important;outline-offset:3px;box-shadow:0 0 0 6px rgba(242,183,5,.25)}
+body.pad :focus{outline:3px solid #f2b705!important;outline-offset:3px}
+.pad-cur{position:fixed;left:0;top:0;z-index:100000;pointer-events:none;margin:-2px 0 0 -3px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45));transition:scale .1s;display:none}
+.pad-cur.down{scale:.82}
 .pad-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#111a;backdrop-filter:blur(6px);color:#fff;padding:10px 16px;border-radius:12px;font-weight:700;z-index:99999;pointer-events:none}
 </style>
 
@@ -2296,49 +2299,47 @@ return{play(kind,variant,L){setPause(false);lastArgs=[kind,variant,L];ov.hidden=
 function boot(d){if(d&&d.S){S=d.S;restoreClubs()}migrate();render()}
 window.claude?.hot?.snapshot?.(()=>({S}));
 window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});
-/* ===== Mando (Xbox o cualquier mando estándar) =====
-   Cruceta/stick izq: moverse · A: elegir · B: volver/cerrar · X: repetir animación
-   Menú: Ajustes · Stick der: desplazar · Izq/der en una lista desplegable: cambiar opción */
+/* ===== Mando (Xbox o cualquier mando estándar) como mouse =====
+   Stick izq / cruceta: mover el cursor · A: clic · B: cancelar/salir · X: repetir animación
+   Menú: Ajustes · Stick der: desplazar la página */
 (function(){
-  const SEL='button,a[href],select,input:not([type=hidden]),textarea,summary,[tabindex]:not([tabindex="-1"])';
-  let prev=[],held={},timer=null,on=false;
-  const vis=e=>{if(e.disabled||e.closest('[hidden]'))return false;const r=e.getBoundingClientRect();if(r.width<2||r.height<2)return false;const st=getComputedStyle(e);return st.visibility!=='hidden'&&st.display!=='none'};
+  const CLK='button,a[href],select,input:not([type=hidden]),textarea,summary,label,[role=button],[tabindex]:not([tabindex="-1"])';
+  let prev={},on=false,cx=innerWidth/2,cy=innerHeight/2,vx=0,vy=0,last=0,hov=null,cur=null,shown=false;
   const a3d=()=>{const o=document.querySelector('.a3d');return o&&!o.hidden&&getComputedStyle(o).display!=='none'?o:null};
-  function scope(){const o=a3d();if(o)return o;const d=[...document.querySelectorAll('[aria-modal="true"]')].filter(x=>!x.hidden&&getComputedStyle(x).display!=='none');return d[d.length-1]||document.body}
-  const cands=()=>[...scope().querySelectorAll(SEL)].filter(vis);
-  const ctr=e=>{const r=e.getBoundingClientRect();return{x:r.left+r.width/2,y:r.top+r.height/2,r}};
-  function foc(e){if(!e)return;e.focus({preventScroll:true});e.scrollIntoView({block:'nearest',inline:'nearest',behavior:'smooth'})}
-  function first(){const all=cands(),c=all.filter(e=>e.id!=='gear');if(!c.length)return all[0];const inView=c.filter(e=>{const r=e.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight});return (inView.find(e=>e.classList.contains('primary'))||inView[0]||c[0])}
-  function move(dx,dy){const c=cands(),cur=document.activeElement;if(!c.includes(cur)){foc(first());return}
-    const a=ctr(cur);let best=null,bs=1e9;
-    for(const e of c){if(e===cur)continue;const b=ctr(e),vx=b.x-a.x,vy=b.y-a.y;
-      const along=dx?vx*dx:vy*dy,side=dx?Math.abs(vy):Math.abs(vx);if(along<=4)continue;
-      const s=along+side*2.2;if(s<bs){bs=s;best=e}}
-    if(best)foc(best);else if(dy)scrollBy({top:dy*220,behavior:'smooth'})}
-  function sel(dir){const e=document.activeElement;if(e&&e.tagName==='SELECT'){const n=e.selectedIndex+dir;if(n>=0&&n<e.options.length){e.selectedIndex=n;e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}))}return true}return false}
+  const modal=()=>[...document.querySelectorAll('[aria-modal="true"]')].find(x=>!x.hidden&&getComputedStyle(x).display!=='none');
+  function mk(){cur=document.createElement('div');cur.className='pad-cur';cur.innerHTML='<svg viewBox="0 0 24 24" width="30" height="30"><path d="M3 2l7.5 19 2.6-7.6L21 10.6z" fill="#fff" stroke="#111" stroke-width="1.6" stroke-linejoin="round"/></svg>';document.body.appendChild(cur)}
+  function show(v){if(!cur)mk();shown=v;cur.style.display=v?'block':'none';document.body.classList.toggle('pad',v)}
+  function target(){cur.style.display='none';const e=document.elementFromPoint(cx,cy);cur.style.display=shown?'block':'none';return e?e.closest(CLK)||e:null}
+  function hover(){const t=target();const c=t&&t.closest?t.closest(CLK):null;if(c!==hov){if(hov)hov.classList.remove('pad-hov');hov=c;if(hov)hov.classList.add('pad-hov')}}
+  function click(){const t=target();if(!t)return;cur.classList.add('down');setTimeout(()=>cur.classList.remove('down'),120);
+    const c=t.closest?t.closest(CLK):null;
+    if(c&&c.tagName==='SELECT'){c.focus();const n=(c.selectedIndex+1)%c.options.length;c.selectedIndex=n;c.dispatchEvent(new Event('input',{bubbles:true}));c.dispatchEvent(new Event('change',{bubbles:true}));return}
+    if(c&&(c.tagName==='TEXTAREA'||c.tagName==='INPUT'&&!/checkbox|radio|button|submit|range/.test(c.type))){c.focus();return}
+    const o={bubbles:true,cancelable:true,clientX:cx,clientY:cy,view:window};(c||t).dispatchEvent(new MouseEvent('mousedown',o));(c||t).dispatchEvent(new MouseEvent('mouseup',o));(c||t).click()}
   function press(i){
-    if(!document.body.classList.contains('pad'))document.body.classList.add('pad');
-    const o=a3d();
-    if(i===0){const e=document.activeElement;if(e&&cands().includes(e)){if(e.tagName==='INPUT'&&/checkbox|radio/.test(e.type)||e.tagName!=='INPUT'&&e.tagName!=='TEXTAREA')e.click();else e.focus()}else foc(first())}
-    if(i===0||i===1||i===9)setTimeout(()=>{if(!cands().includes(document.activeElement))foc(first())},260);
+    if(!shown)show(true);const o=a3d();
+    if(i===0)click();
     else if(i===1){if(o){const b=o.querySelector('[data-a=skip]');if(b)b.click()}else{const ev=new KeyboardEvent('keydown',{key:'Escape',bubbles:true});document.dispatchEvent(ev);window.dispatchEvent(ev)}}
     else if(i===2){if(o){const b=o.querySelector('[data-a=rep]');if(b)b.click()}}
-    else if(i===9){const g=document.getElementById('gear');if(g&&!o&&scope()===document.body)g.click()}
-    else if(i===12)move(0,-1);else if(i===13)move(0,1);
-    else if(i===14){if(!sel(-1))move(-1,0)}else if(i===15){if(!sel(1))move(1,0)}}
-  function loop(){const gp=[...(navigator.getGamepads?navigator.getGamepads():[])].find(g=>g&&g.connected);
-    if(!gp){timer=requestAnimationFrame(loop);return}
-    const ax=gp.axes||[],st={};gp.buttons.forEach((b,i)=>st[i]=b.pressed||b.value>.5);
-    // stick izquierdo = cruceta
-    if((ax[1]||0)<-.6)st[12]=true;if((ax[1]||0)>.6)st[13]=true;if((ax[0]||0)<-.6)st[14]=true;if((ax[0]||0)>.6)st[15]=true;
-    const now=performance.now();
-    for(const k of [0,1,2,9,12,13,14,15]){if(st[k]&&!prev[k]){press(k);held[k]=now+380}else if(st[k]&&k>=12&&now>held[k]){press(k);held[k]=now+130}}
-    const ry=ax[3]||0;if(Math.abs(ry)>.25)scrollBy(0,ry*18);
-    prev=st;timer=requestAnimationFrame(loop)}
-  function toast(t){const d=document.createElement('div');d.className='pad-toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2600)}
-  addEventListener('gamepadconnected',()=>{if(!on){on=true;loop()}document.body.classList.add('pad');toast('🎮 Mando conectado · A elegir · B volver');setTimeout(()=>{if(!cands().includes(document.activeElement))foc(first())},100)});
-  addEventListener('gamepaddisconnected',()=>toast('Mando desconectado'));
-  addEventListener('mousedown',()=>document.body.classList.remove('pad'));
+    else if(i===9){const g=document.getElementById('gear');if(g&&!o&&!modal())g.click()}}
+  function loop(now){const gp=[...(navigator.getGamepads?navigator.getGamepads():[])].find(g=>g&&g.connected);
+    const dt=Math.min(.05,(now-(last||now))/1000);last=now;
+    if(gp){const ax=gp.axes||[],b=i=>gp.buttons[i]&&(gp.buttons[i].pressed||gp.buttons[i].value>.5);
+      let lx=ax[0]||0,ly=ax[1]||0;const dz=.15;lx=Math.abs(lx)<dz?0:(lx-Math.sign(lx)*dz)/(1-dz);ly=Math.abs(ly)<dz?0:(ly-Math.sign(ly)*dz)/(1-dz);
+      if(b(12))ly=-.6;if(b(13))ly=.6;if(b(14))lx=-.6;if(b(15))lx=.6;
+      const sp=Math.min(innerWidth,innerHeight)*1.6*(b(7)||b(5)?1.8:1);  // RT/RB: más rápido
+      const mx=Math.sign(lx)*Math.pow(Math.abs(lx),1.7)*sp*dt,my=Math.sign(ly)*Math.pow(Math.abs(ly),1.7)*sp*dt;
+      if(mx||my){if(!shown)show(true);cx=Math.max(2,Math.min(innerWidth-2,cx+mx));cy=Math.max(2,Math.min(innerHeight-2,cy+my));cur.style.transform=`translate(${cx}px,${cy}px)`;hover();
+        // borde de la pantalla: desplaza la página
+        if(cy>innerHeight-40&&my>0)scrollBy(0,my*1.2);if(cy<40&&my<0)scrollBy(0,my*1.2)}
+      const ry=ax[3]||0;if(Math.abs(ry)>.2){scrollBy(0,ry*22);if(shown)hover()}
+      for(const k of [0,1,2,9]){const p=b(k);if(p&&!prev[k])press(k);prev[k]=p}}
+    requestAnimationFrame(loop)}
+  function toast(t){const d=document.createElement('div');d.className='pad-toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2800)}
+  addEventListener('gamepadconnected',()=>{if(!on){on=true;requestAnimationFrame(loop)}show(true);cur.style.transform=`translate(${cx}px,${cy}px)`;toast('🎮 Mando conectado · A clic · B salir · ☰ Ajustes')});
+  addEventListener('gamepaddisconnected',()=>{show(false);toast('Mando desconectado')});
+  addEventListener('mousemove',e=>{if(shown&&e.isTrusted&&(Math.abs(e.movementX)+Math.abs(e.movementY)>2))show(false)});
+  addEventListener('resize',()=>{cx=Math.min(cx,innerWidth-2);cy=Math.min(cy,innerHeight-2)});
 })();
 
 </script>
